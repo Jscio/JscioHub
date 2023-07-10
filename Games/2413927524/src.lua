@@ -53,6 +53,7 @@ local Folders; Folders = {
 }
 
 local ScrapSpawns = Folders.Filter:WaitForChild("ScrapSpawns")
+local LocationPoints = Folders.Filter:WaitForChild("LocationPoints")
 
 
 --<< Config >>--
@@ -67,7 +68,7 @@ local Config = {
                 Visible = true,
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
-                OutlineColor = { Color3.new(0, 1, 0), 0.1 },
+                OutlineColor = { Color3.new(0, 1, 0), 0.8 },
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -352,7 +353,7 @@ local function IndexScrap(Scrap : Model)
             OutlineColor = Options.Cham.OutlineColor,
         },
         OnDestroy = function(ESPObject)
-            print("Cham Index Destroy")
+            print("Scrap Index Destroy")
             table.remove(ESPObjects.Scrap, table.find(ESPObjects.Scrap, ESPObject))
         end
     })
@@ -368,6 +369,49 @@ local function IndexAllScraps()
     end
 end
 
+--<>><><><><><><><><>--
+local function IndexWaypoint(LocationPoint : Part)
+    if not LocationPoint then
+        return
+    end
+
+    local Options = Config.Render.Waypoint
+
+    local text
+    if LocationPoint.Name:find("Station") then
+        text = "Power Station"
+    else
+        text = LocationPoint.Name:gsub("MSG", ""):gsub("(%l)(%u)", "%1 %2")
+    end
+
+    local Object = ESPLibrary.new(LocationPoint, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = "The " .. text .. " - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible
+        },
+        OnDestroy = function(ESPObject)
+            print("Waypoint Index Destroy")
+            table.remove(ESPObjects.Waypoint, table.find(ESPObjects.Waypoint, ESPObject))
+        end
+    })
+
+    if Object then
+        table.insert(ESPObjects.Waypoint, Object)
+    end
+end
+
+local function IndexAllWaypoints()
+    for _, LocationPoint in ipairs(LocationPoints:GetChildren()) do
+        IndexWaypoint(LocationPoint)
+    end
+end
 
 -->> Others:
 local function CleanUp()
@@ -394,6 +438,7 @@ local function CleanUp()
         end
     end
 end
+
 
 --<< GUI >>--
 local Window = Rayfield:CreateWindow({
@@ -519,6 +564,44 @@ do
             end
         })
     end
+
+    Tab:CreateSection("Scrap") do
+        local Options = Config.Render.Scrap
+
+        Tab:CreateToggle({
+            Name = "Scrap Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.Scrap.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("Scrap")
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Scrap Cham Enabled",
+            CurrentValue = Options.Cham.Visible,
+            Flag = "Render.Scrap.Cham.Visible",
+            Callback = function(bool)
+                Options.Cham.Visible = bool
+                UpdateIndex("Scrap")
+            end
+        })
+    end
+
+    Tab:CreateSection("Waypoint") do
+        local Options = Config.Render.Waypoint
+
+        Tab:CreateToggle({
+            Name = "Waypoint Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.Waypoint.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("Waypoint")
+            end
+        })
+    end
 end
 
 
@@ -526,6 +609,8 @@ end
 IndexAllPlayers()
 IndexRake()
 IndexFlareGun()
+IndexAllScraps()
+IndexAllWaypoints()
 
 coroutine.wrap(function()
     task.wait(5)
