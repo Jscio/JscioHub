@@ -16,16 +16,22 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-do
+if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
+    warn("Unable to find localplayer character. Yielding...")
     Players.LocalPlayer.CharacterAdded:Wait()
     Players.LocalPlayer.Character:WaitForChild("Humanoid")
     Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    print("Localplayer character found!")
 end
 
 
 --<< Libraries >>--
-local ESPLibrary = loadstring(game:HttpGet(""))()
-local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/ESPLibrary.lua"))()
+local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/UILibrary.lua"))() -- Modified version of Kavo UI Library
+
+
+--<< Variables >>--
+local Hooks = {}
 
 
 --<< Game Objects >>--
@@ -52,29 +58,38 @@ local function ModifyStamina()
     for _, v in pairs(getloadedmodules()) do
 		if v.Name == "M_H" then
 			local module = require(v)
-			local hook
-			hook = hookfunction(module.TakeStamina, function(something, amount)
+			Hooks.Stamina = hookfunction(module.TakeStamina, function(something, amount)
 				if amount > 0 and Config.Movement.NoStaminaDrain then
-					return hook(something, -1)
+					return Hooks.Stamina(something, -1)
 				end
 				
-				return hook(something, amount)
+				return Hooks.Stamina(something, amount)
 			end)
 		end
 	end
 end
 
 local function ModifyFallDamage()
-    local hook
-    hook = hookmetamethod(game, "__namecall", function(...)
+    Hooks.FallDamage = hookmetamethod(game, "__namecall", function(...)
 		if getnamecallmethod() == "FireServer" and Config.Movement.NoFallDamage then
 			if tostring(...) == "FD_Event" then
 				return
 			end
 		end
 		
-		return hook(...)
+		return Hooks.FallDamage(...)
 	end)
+end
+
+local function CleanUp()
+    for _, v in pairs(getloadedmodules()) do
+		if v.Name == "M_H" then
+			local module = require(v)
+			hookfunction(module.TakeStamina, Hooks.Stamina)
+		end
+	end
+
+    hookmetamethod(game, "__namecall", Hooks.FallDamage)
 end
 
 --<< GUI >>--
@@ -93,12 +108,10 @@ local Tabs = {
 -->> Movement
 do
     local Tab = Tabs.Movement
+
     local Blatant = Tab:Section("Blatant") do
         Blatant:Toggle("No Stamina Drain", "Stamina will not be drained by running", function(bool)
             Config.Movement.NoStaminaDrain = bool
-            if bool then
-                ModifyStamina()
-            end
         end)
 
         Blatant:Toggle("No Fall Damage", "Removes damage from falling", function(bool)
@@ -106,3 +119,28 @@ do
         end)
     end
 end
+
+-->> Settings
+do
+    local Tab = Tabs.Settings
+    
+    local Menu = Tab:Section("Menu") do
+        Menu:Keybind("Toggle GUI", "Press the keybind to hide or show GUI", Enum.KeyCode.RightControl, function()
+            KavoUI:ToggleUI()
+        end)
+    end
+
+    local Themes = Tab:Section("Themes") do
+        
+    end
+end
+
+--<< Initialize >>--
+KavoUI.OnDestroy = CleanUp()
+
+coroutine.wrap(function()
+    task.wait(5)
+
+    ModifyStamina()
+    ModifyFallDamage()
+end)()
