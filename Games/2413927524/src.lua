@@ -52,6 +52,8 @@ local Folders; Folders = {
     MapFolder = workspace:WaitForChild("Map")
 }
 
+local ScrapSpawns = Folders.Filter:WaitForChild("ScrapSpawns")
+
 
 --<< Config >>--
 local Config = {
@@ -65,7 +67,7 @@ local Config = {
                 Visible = true,
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
-                OutlineColor = { Color3.new(0, 1, 0), 0.8 },
+                OutlineColor = { Color3.new(0, 1, 0), 0.1 },
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -194,12 +196,15 @@ local function UpdateIndex(category : string)
     assert(category, "Missing argument #1 (string expected)")
     assert(type(category), "Class not supported #1 (string expected)")
 
-    if type(ESPObjects[category]) == "table" then
-        for _, ESPObject in ipairs(ESPObjects[category]) do
-            ESPObject:Update(Config.Render[category])
+    if category == "Rake" or category == "FlareGun" then
+        if ESPObjects[category] ~= nil then
+            ESPObjects[category]:Update(Config.Render[category])
         end
-    else
-        ESPObjects[category]:Update(Config.Render[category])
+        return
+    end
+
+    for _, ESPObject in ipairs(ESPObjects[category]) do
+        ESPObject:Update(Config.Render[category])
     end
 end
 
@@ -309,6 +314,59 @@ local function IndexFlareGun()
 end
 
 --<>><><><><><><><><>--
+local function GetAllScraps()
+    local list = {}
+
+    for _, Spawner in ipairs(ScrapSpawns:GetChildren()) do
+        if not Spawner:FindFirstChildWhichIsA("Model") then
+            continue
+        end
+
+        if Spawner:FindFirstChildWhichIsA("Model"):FindFirstChild("Scrap") then
+            table.insert(list, Spawner:FindFirstChildWhichIsA("Model"):FindFirstChild("Scrap"))
+        end
+    end
+
+    return list
+end
+
+local function IndexScrap(Scrap : Model)
+    if not Scrap then
+        return
+    end
+
+    local Options = Config.Render.Scrap
+
+    local Object = ESPLibrary.new(Scrap, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = "Scrap - Lv." .. tostring(Scrap.Parent.LevelVal.Value) .. " - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible,
+            Color = Options.Cham.Color,
+            OutlineColor = Options.Cham.OutlineColor,
+        },
+        OnDestroy = function(ESPObject)
+            print("Cham Index Destroy")
+            table.remove(ESPObjects.Scrap, table.find(ESPObjects.Scrap, ESPObject))
+        end
+    })
+
+    if Object then
+        table.insert(ESPObjects.Scrap, Object)
+    end
+end
+
+local function IndexAllScraps()
+    for _, Scrap in ipairs(GetAllScraps()) do
+        IndexScrap(Scrap)
+    end
+end
 
 
 -->> Others:
@@ -339,9 +397,9 @@ end
 
 --<< GUI >>--
 local Window = Rayfield:CreateWindow({
-    Name = "Jscio - The Rake Remastered",
+    Name = "JscioHub - The Rake Remastered",
     LoadingTitle = "The Rake Remastered Script",
-    LoadingSubtitle = "by JsioHub",
+    LoadingSubtitle = "by JscioHub",
     ConfigurationSaving = {
        Enabled = true,
        FolderName = "JscioHub"
@@ -371,6 +429,7 @@ do
             Flag = "Movement.NoStaminaDrain",
             Callback = function(bool)
                 Options.NoStaminaDrain = bool
+                print(bool)
             end
         })
 
@@ -485,6 +544,12 @@ workspace.ChildAdded:Connect(function(child)
         IndexFlareGun()
     end
 end)
+
+for _, Spawner in ipairs(ScrapSpawns:GetChildren()) do
+    Spawner.ChildAdded:Connect(function(child)
+        IndexScrap(child:WaitForChild("Scrap"))
+    end)
+end
 
 coroutine.wrap(function()
     while task.wait(5) do

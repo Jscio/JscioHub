@@ -72,6 +72,7 @@ function ESPLibrary.new(Target : Instance, options : table)
     if ESPLibrary.HasMark(Target) then
         return
     end
+    ESPLibrary.Mark(Target)
 
     assert(Target, "missing argument #1 (Instance expected)")
     if options == nil then
@@ -118,7 +119,7 @@ function ESPLibrary.new(Target : Instance, options : table)
         if self.Observer then
             self.Observer:Disconnect()
         end
-        
+
         self.Nametag:Destroy()
         self.Cham:Destroy()
 
