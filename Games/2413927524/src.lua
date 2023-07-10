@@ -209,11 +209,11 @@ end
 
 local function IndexAllPlayers()
     for _, Player in ipairs(Players:GetPlayers()) do
-        if Player == LocalPlayer then
+        if Player == LocalPlayer or not Player.Character or Player.Character == nil then
             continue
         end
 
-        IndexPlayer(Player.Character)
+        IndexPlayer(Player.Character:WaitForChild("Head"))
     end
 end
 
@@ -223,6 +223,8 @@ end
 
 -->> Others:
 local function CleanUp()
+    warn("Clean Up?")
+
     for _, v in pairs(getloadedmodules()) do
 		if v.Name == "M_H" then
 			local module = require(v)
@@ -300,7 +302,7 @@ do
 end
 
 --<< Initialize >>--
-KavoUI.OnDestroy = CleanUp()
+-- KavoUI.OnDestroy = CleanUp() -- Got kicked instead?
 
 IndexAllPlayers()
 

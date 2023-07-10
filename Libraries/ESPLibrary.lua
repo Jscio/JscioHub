@@ -202,8 +202,31 @@ coroutine.wrap(function()
     while loopConnection do
         for _, ESPObject in ipairs(ESPObjects) do
             if ESPObject.Options.Nametag.Visible then
-                local distance = (workspace.CurrentCamera.CFrame.Position - ESPObject.Target.CFrame.Position).Magnitude
-        
+                local Target : Instance = ESPObject.Target
+
+                local isBodyPart = false
+                local Humanoid = Target:FindFirstChildWhichIsA("Humanoid") do
+                    if Target.Parent ~= nil and not Humanoid then
+                        if Target.Parent:FindFirstChildWhichIsA("Humanoid") then
+                            isBodyPart = true
+                            Humanoid = Target.Parent:FindFirstChildWhichIsA("Humanoid")
+                        end
+                    end
+                end
+                
+                local distance = 0
+                if Humanoid then
+                    if isBodyPart then
+                        distance = (workspace.CurrentCamera.CFrame.Position - Target.CFrame.Position).Magnitude
+                    else
+                        distance = (workspace.CurrentCamera.CFrame.Position - Target.HumanoidRootPart.CFrame.Position).Magnitude
+                    end
+                elseif Target:IsA("Model") then
+                    distance = (workspace.CurrentCamera.CFrame.Position - Target.WorldPivot.Position).Magnitude
+                else
+                    distance = (workspace.CurrentCamera.CFrame.Position - Target.CFrame.Position).Magnitude
+                end
+                
                 ESPObject.Nametag.TextLabel.Text = ESPObject.Options.Nametag.Text:gsub("{distance}", tostring(math.round(distance)))
             end
         end
