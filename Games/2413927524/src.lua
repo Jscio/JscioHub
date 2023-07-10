@@ -20,6 +20,8 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
+print("JscioHub v0.1.3")
+
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
     Players.LocalPlayer.CharacterAdded:Wait()
@@ -28,7 +30,6 @@ if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character the
     print("Localplayer character found!")
 end
 
-print("JscioHub v0.1.2")
 
 --<< Libraries >>--
 local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/ESPLibrary.lua"))()
@@ -167,7 +168,7 @@ local Config = {
             CanCollide = true,
             Visible = false
         },
-        NoFog = true,
+        NoFog = false,
         Sky = {
             AlwaysDay = false,
             AlwaysNight = false,
@@ -548,7 +549,7 @@ local function UpdateBorders()
     for _, Border in ipairs(InvisibleWalls) do
         if Border:IsA("BasePart") or Border:IsA("Part") then
             Border.CanCollide = Config.World.Borders.CanCollide
-            Border.Transparency = Config.World.Borders.Visible and 0.75 or 1
+            Border.Transparency = Config.World.Borders.Visible and 0.8 or 1
             Border.Color = Color3.fromRGB(255, 0, 0)
         end
     end
@@ -858,6 +859,8 @@ end
 do
     local Tab = Tabs.World
 
+    Tab:CreateLabel("CLIENT SIDED: You are the only one affected.")
+
     Tab:CreateSection("Map Modification") do
         local Options = Config.World.Borders
 
@@ -948,6 +951,16 @@ do
                 end
             end
         })
+
+        Tab:CreateToggle({
+            Name = "No Blood Hour Ambient",
+            CurrentValue = Options.NoBloodHour,
+            Flag = "World.Sky.NoBloodHour",
+            Callback = function(bool)
+                Options.NoBloodHour = bool
+                BloodHourColor.Enabled = bool
+            end
+        })
     end
 end
 
@@ -998,3 +1011,22 @@ coroutine.wrap(function()
         IndexAllPlayers()
     end
 end)()
+
+--<< Game Loop >>--
+while true do
+    if Config.World.Sky.AlwaysDay then
+        UpdateToDay()
+    end
+
+    if Config.World.Sky.AlwaysDay then
+        UpdateToNight()
+    end
+
+    if Config.World.NoFog then
+        EraseFog()
+    end
+
+    for i = 1, 3, 1 do
+        RunService.Heartbeat:Wait()
+    end
+end
