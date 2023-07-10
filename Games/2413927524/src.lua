@@ -5,7 +5,6 @@
 
 --[[
     TODO: Make `ESPObject:Update()` updates the only thing it gives.
-    TODO: Add notification system for when an object has spawned (Render Tab).
 ]]--
 
 --<< Services >>--
@@ -29,6 +28,7 @@ if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character the
     print("Localplayer character found!")
 end
 
+print("JscioHub v0.1.2")
 
 --<< Libraries >>--
 local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/ESPLibrary.lua"))()
@@ -56,11 +56,6 @@ local Folders; Folders = {
     Debris = workspace:WaitForChild("Debris"),
     Map = workspace:WaitForChild("Map")
 }
-
-local ScrapSpawns = Folders.Filter:WaitForChild("ScrapSpawns")
-local LocationPoints = Folders.Filter:WaitForChild("LocationPoints")
-local SupplyCrates = Folders.Debris:WaitForChild("SupplyCrates")
-local TrapsFolder = Folders.Debris:WaitForChild("Traps")
 
 
 --<< Config >>--
@@ -115,7 +110,7 @@ local Config = {
         Scrap = {
             Nametag = {
                 Visible = true,
-                TextSize = 12,
+                TextSize = 10,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0, 0), 0.5},
                 Offset = Vector3.new(0, 2, 0)
@@ -129,10 +124,10 @@ local Config = {
         Waypoint = {
             Nametag = {
                 Visible = true,
-                TextSize = 12,
+                TextSize = 14,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0.5, 1), 0.7},
-                Offset = Vector3.new(0, 2, 0)
+                Offset = Vector3.new(0, 5, 0)
             },
             Cham = {
                 Visible = false
@@ -166,6 +161,26 @@ local Config = {
                 OutlineColor = { Color3.new(1, 0, 0), 0 }
             }
         },
+    },
+    World = {
+        Borders = {
+            CanCollide = true,
+            Visible = false
+        },
+        NoFog = true,
+        Sky = {
+            AlwaysDay = false,
+            AlwaysNight = false,
+            NoBloodHour = false
+        }
+    }
+}
+
+local SecondaryConfig = {
+    Render = {
+        RakeNotification = true,
+        FlareGunNotification = true,
+        SupplyCrateNotification = true,
     }
 }
 
@@ -216,7 +231,7 @@ local function UpdateIndex(category : string)
     end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
 local function IndexPlayer(Character : Model)
     if not Character then
         return
@@ -239,7 +254,6 @@ local function IndexPlayer(Character : Model)
             OutlineColor = Options.Cham.OutlineColor,
         },
         OnDestroy = function(ESPObject)
-            print("Player Index Destroy")
             table.remove(ESPObjects.Players, table.find(ESPObjects.Players, ESPObject))
         end
     })
@@ -259,7 +273,7 @@ local function IndexAllPlayers()
     end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
 local function IndexRake()
     local Rake = workspace:FindFirstChild("Rake")
 
@@ -284,13 +298,20 @@ local function IndexRake()
             OutlineColor = Options.Cham.OutlineColor,
         },
         OnDestroy = function(ESPObject)
-            print("Rake Index Destroy")
             ESPObjects.Rake = nil
         end
     })
+
+    if ESPObjects.Rake and SecondaryConfig.Render.RakeNotification then
+        Rayfield:Notify({
+            Title = "The Rake Notifier",
+            Content = "The Rake has emerged from its cave.",
+            Duration = 3
+        })
+    end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
 local function IndexFlareGun()
     local FlareGun = workspace:FindFirstChild("FlareGunPickUp")
 
@@ -315,13 +336,22 @@ local function IndexFlareGun()
             OutlineColor = Options.Cham.OutlineColor,
         },
         OnDestroy = function(ESPObject)
-            print("FlareGun Index Destroy")
             ESPObjects.FlareGun = nil
         end
     })
+
+    if ESPObjects.FlareGun and SecondaryConfig.Render.FlareGunNotification then
+        Rayfield:Notify({
+            Title = "Flare Gun Notifier",
+            Content = "Flare Gun has been dropped",
+            Duration = 3
+        })
+    end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
+local ScrapSpawns = Folders.Filter:WaitForChild("ScrapSpawns")
+
 local function GetAllScraps()
     local list = {}
 
@@ -360,7 +390,6 @@ local function IndexScrap(Scrap : Model)
             OutlineColor = Options.Cham.OutlineColor,
         },
         OnDestroy = function(ESPObject)
-            print("Scrap Index Destroy")
             table.remove(ESPObjects.Scrap, table.find(ESPObjects.Scrap, ESPObject))
         end
     })
@@ -376,7 +405,9 @@ local function IndexAllScraps()
     end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
+local LocationPoints = Folders.Filter:WaitForChild("LocationPoints"):GetChildren()
+
 local function IndexWaypoint(LocationPoint : Part)
     if not LocationPoint then
         return
@@ -404,7 +435,6 @@ local function IndexWaypoint(LocationPoint : Part)
             Visible = Options.Cham.Visible
         },
         OnDestroy = function(ESPObject)
-            print("Waypoint Index Destroy")
             table.remove(ESPObjects.Waypoint, table.find(ESPObjects.Waypoint, ESPObject))
         end
     })
@@ -415,12 +445,14 @@ local function IndexWaypoint(LocationPoint : Part)
 end
 
 local function IndexAllWaypoints()
-    for _, LocationPoint in ipairs(LocationPoints:GetChildren()) do
+    for _, LocationPoint in ipairs(LocationPoints) do
         IndexWaypoint(LocationPoint)
     end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
+local SupplyCrates = Folders.Debris:WaitForChild("SupplyCrates")
+
 local function IndexSupplyCrate(Box : Model)
     if not Box then
         return
@@ -447,6 +479,13 @@ local function IndexSupplyCrate(Box : Model)
     })
 
     if Object then
+        if SecondaryConfig.Render.SupplyCrateNotification then
+            Rayfield:Notify({
+                Title = "Supply Crate Notifier",
+                Content = "Supply Crate has been dropped",
+                Duration = 3
+            })
+        end
         table.insert(ESPObjects.SupplyCrate, Object)
     end
 end
@@ -457,7 +496,9 @@ local function IndexAllSupplyCrates()
     end
 end
 
---<>><><><><><><><><>--
+--<><><><><><><><><>--
+local TrapsFolder = Folders.Debris:WaitForChild("Traps")
+
 local function IndexTrap(Trap : Model)
     if not Trap then
         return
@@ -493,6 +534,60 @@ local function IndexAllTraps()
         IndexTrap(Trap)
     end
 end
+
+-->> World:
+local InvisibleWalls = Folders.Filter:WaitForChild("InvisibleWalls"):GetChildren() do
+    for _, Border in ipairs(InvisibleWalls) do
+        if Border:IsA("BasePart") or Border:IsA("Part") then
+            Border.Material = Enum.Material.Neon
+        end
+    end
+end
+
+local function UpdateBorders()
+    for _, Border in ipairs(InvisibleWalls) do
+        if Border:IsA("BasePart") or Border:IsA("Part") then
+            Border.CanCollide = Config.World.Borders.CanCollide
+            Border.Transparency = Config.World.Borders.Visible and 0.75 or 1
+            Border.Color = Color3.fromRGB(255, 0, 0)
+        end
+    end
+end
+
+--<><><><><><><><><>--
+local CurrentLightingProperties = ReplicatedStorage:WaitForChild("CurrentLightingProperties")
+
+local function EraseFog()
+    Lighting.FogEnd = 9999
+    CurrentLightingProperties.FogEnd.Value = 9999
+end
+
+--<><><><><><><><><>--
+local DayProperties = ReplicatedStorage:WaitForChild("DayProperties"):GetChildren()
+local NightProperties = ReplicatedStorage:WaitForChild("NightProperties"):GetChildren()
+local BloodHourColor = Lighting:WaitForChild("BloodHourColor")
+
+local NightValue = ReplicatedStorage:WaitForChild("Night")
+local TurningToDay = ReplicatedStorage:WaitForChild("TurningToDay")
+
+local function UpdateToDay()
+    for _, value in ipairs(DayProperties) do
+        Lighting[value.Name] = value.Value
+        if CurrentLightingProperties:FindFirstChild(value.Name) then
+            CurrentLightingProperties[value.Name].Value = value.Value
+        end
+    end
+end
+
+local function UpdateToNight()
+    for _, value in ipairs(NightProperties) do
+        Lighting[value.Name] = value.Value
+        if CurrentLightingProperties:FindFirstChild(value.Name) then
+            CurrentLightingProperties[value.Name].Value = value.Value
+        end
+    end
+end
+
 
 -->> Others:
 local function CleanUp()
@@ -555,7 +650,6 @@ do
             Flag = "Movement.NoStaminaDrain",
             Callback = function(bool)
                 Options.NoStaminaDrain = bool
-                print(bool)
             end
         })
 
@@ -620,6 +714,15 @@ do
                 UpdateIndex("Rake")
             end
         })
+
+        Tab:CreateToggle({
+            Name = "Rake Notifier",
+            CurrentValue = SecondaryConfig.Render.RakeNotification,
+            Flag = "Render.Rake.Notification",
+            Callback = function(bool)
+                SecondaryConfig.Render.RakeNotification = bool
+            end
+        })
     end
 
     Tab:CreateSection("Flare Gun") do
@@ -642,6 +745,15 @@ do
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("FlareGun")
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Flare Gun Notifier",
+            CurrentValue = SecondaryConfig.Render.FlareGunNotification,
+            Flag = "Render.FlareGun.Notification",
+            Callback = function(bool)
+                SecondaryConfig.Render.FlareGunNotification = bool
             end
         })
     end
@@ -704,6 +816,136 @@ do
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("SupplyCrate")
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Supply Crate Notifier",
+            CurrentValue = SecondaryConfig.Render.SupplyCrateNotification,
+            Flag = "Render.SupplyCrate.Notification",
+            Callback = function(bool)
+                SecondaryConfig.Render.SupplyCrateNotification = bool
+            end
+        })
+    end
+
+    Tab:CreateSection("Trap") do
+        local Options = Config.Render.Trap
+
+        Tab:CreateToggle({
+            Name = "Trap Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.Trap.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("Trap")
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Trap Cham Enabled",
+            CurrentValue = Options.Cham.Visible,
+            Flag = "Render.Trap.Cham.Visible",
+            Callback = function(bool)
+                Options.Cham.Visible = bool
+                UpdateIndex("Trap")
+            end
+        })
+    end
+end
+
+-->> World
+do
+    local Tab = Tabs.World
+
+    Tab:CreateSection("Map Modification") do
+        local Options = Config.World.Borders
+
+        Tab:CreateToggle({
+            Name = "Borders Collision Enabled",
+            CurrentValue = Options.CanCollide,
+            Flag = "World.Borders.CanCollide",
+            Callback = function(bool)
+                Options.CanCollide = bool
+                UpdateBorders()
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Show Borders",
+            CurrentValue = Options.Visible,
+            Flag = "World.Borders.Visible",
+            Callback = function(bool)
+                Options.Visible = bool
+                UpdateBorders()
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "No Fog",
+            CurrentValue = Config.World.NoFog,
+            Flag = "World.NoFog",
+            Callback = function(bool)
+                Config.World.NoFog = bool
+
+                if not bool then
+                    if not NightValue.Value or TurningToDay.Value then
+                        UpdateToDay()
+                    elseif NightValue.Value and not TurningToDay.Value then
+                        UpdateToNight()
+                    end
+                end
+            end
+        })
+    end
+
+    Tab:CreateSection("Sky Modification") do
+        local Options = Config.World.Sky
+        local identity = false
+
+        Tab:CreateToggle({
+            Name = "Always Day Time",
+            CurrentValue = Options.AlwaysDay,
+            Flag = "World.Sky.AlwaysDay",
+            Callback = function(bool)
+                Options.AlwaysDay = bool
+
+                if bool then
+                    if not identity and Options.AlwaysNight then
+                        identity = true
+                        Rayfield.Flags["World.Sky.AlwaysNight"]:Set(false)
+                        identity = false
+                    end
+                else
+                    if not NightValue.Value or TurningToDay.Value then
+                        UpdateToDay()
+                    elseif NightValue.Value and not TurningToDay.Value then
+                        UpdateToNight()
+                    end
+                end
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Always Night Time",
+            CurrentValue = Options.AlwaysNight,
+            Flag = "World.Sky.AlwaysNight",
+            Callback = function(bool)
+                Options.AlwaysNight = bool
+
+                if bool then
+                    if not identity and Options.AlwaysDay then
+                        identity = true
+                        Rayfield.Flags["World.Sky.AlwaysDay"]:Set(false)
+                        identity = false
+                    end
+                else
+                    if not NightValue.Value or TurningToDay.Value then
+                        UpdateToDay()
+                    elseif NightValue.Value and not TurningToDay.Value then
+                        UpdateToNight()
+                    end
+                end
             end
         })
     end
