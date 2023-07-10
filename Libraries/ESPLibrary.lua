@@ -32,7 +32,7 @@ local defaultOptions = {
         Color = { Color3.new(1, 0, 0), 0.5 },
         OutlineColor = { Color3.new(1, 1, 1), 0 },
     },
-    OnDestroy = function(ESPObject) end
+    OnDestroy = function(ESPObject) print("Default") end
 }
 
 --<< Functions >>--
@@ -146,7 +146,7 @@ function ESPLibrary.new(Target : Instance, options : table)
             TextLabel.TextStrokeTransparency = Nametag.OutlineColor[2]
 
             TextLabel.Parent = Billboard
-            Billboard.Adornee = Target:FindFirstChild("Head") and Target:FindFirstChild("Head") or Target
+            Billboard.Adornee = Target:FindFirstChild("Head") or Target
             Billboard.Parent = NametagsFolder
 
             self.Nametag = Billboard

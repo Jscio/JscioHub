@@ -60,82 +60,109 @@ local Config = {
         NoFallDamage = false
     },
     Render = {
-        Nametag = {
-            Players = {
+        Players = {
+            Nametag = {
                 Visible = true,
-                TextSize = 8,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(0, 1, 0), 0.8 }
+                TextSize = 12,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(0, 1, 0), 0.8 },
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
             },
-            Rake = {
-                Visible = true,
-                TextSize = 10,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(1, 0, 0), 0.5 }
-            },
-            FlareGun = {
-                Visible = true,
-                TextSize = 10,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
-            },
-            Scrap = {
-                Visible = true,
-                TextSize = 8,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
-            },
-            Waypoint = {
-                Visible = true,
-                TextSize = 10,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(0, 0.5, 1), 0.7}
-            },
-            SupplyCrate = {
-                Visible = true,
-                TextSize = 10,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
-            },
-            Trap = {
-                Visible = false,
-                TextSize = 8,
-                TextColor = { Color3.new(1, 1, 1), 0 },
-                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
-            }
-        },
-        Cham = {
-            Players = {
+            Cham = {
                 Visible = true,
                 Color = { Color3.new(1, 1, 1), 0.9 },
                 OutlineColor = { Color3.new(0, 1, 0), 0 }
-            },
-            Rake = {
+            }
+        },
+        Rake = {
+            Nametag = {
                 Visible = true,
-                Color = { Color3.new(1, 1, 1), 0.9 },
-                OutlineColor = { Color3.new(1, 0, 0), 0 }
+                TextSize = 12,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(1, 0, 0), 0.5 },
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
             },
-            FlareGun = {
-                Visible = true,
-                Color = { Color3.new(1, 1, 1), 0.9 },
-                OutlineColor = { Color3.new(1, 0, 1), 0 }
-            },
-            Scrap = {
-                Visible = true,
-                Color = { Color3.new(1, 1, 1), 0.9 },
-                OutlineColor = { Color3.new(1, 1, 0), 0 }
-            },
-            SupplyCrate = {
-                Visible = true,
-                Color = { Color3.new(1, 1, 1), 0.9 },
-                OutlineColor = { Color3.new(1, 1, 0), 0 }
-            },
-            Trap = {
+            Cham = {
                 Visible = true,
                 Color = { Color3.new(1, 1, 1), 0.9 },
                 OutlineColor = { Color3.new(1, 0, 0), 0 }
             }
-        }
+        },
+        FlareGun = {
+            Nametag = {
+                Visible = true,
+                TextSize = 12,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(0, 0, 0), 0.5 },
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
+            },
+            Cham = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 0, 1), 0 }
+            }
+        },
+        Scrap = {
+            Nametag = {
+                Visible = true,
+                TextSize = 12,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(0, 0, 0), 0.5},
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
+            },
+            Cham = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 1, 0), 0 }
+            }
+        },
+        Waypoint = {
+            Nametag = {
+                Visible = true,
+                TextSize = 12,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(0, 0.5, 1), 0.7},
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
+            },
+            Cham = {
+                Visible = false
+            }
+        },
+        SupplyCrate = {
+            Nametag = {
+                Visible = true,
+                TextSize = 12,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(0, 0, 0), 0.5},
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
+            },
+            Cham = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 1, 0), 0 }
+            }
+        },
+        Trap = {
+            Nametag = {
+                Visible = false,
+                TextSize = 10,
+                Color = { Color3.new(1, 1, 1), 0 },
+                OutlineColor = { Color3.new(0, 0, 0), 0.5},
+                Font = Enum.Font.Ubuntu,
+                Offset = Vector3.new(0, 2, 0)
+            },
+            Cham = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 0, 0), 0 }
+            }
+        },
     }
 }
 
@@ -175,34 +202,14 @@ local function IndexPlayer(Character : Model)
         return
     end
 
-    local nametagConfig = Config.Render.Nametag.Players
-    local chamConfig = Config.Render.Cham.Players
-
-    local Object = ESPLibrary.new(Character, {
-        Visible = true,
-        Nametag = {
-            Visible = nametagConfig.Visible,
-            AlwaysOnTop = true,
-            MaxDistance = math.huge,
-            Text = Character.Name .. " - {distance}",
-            TextSize = nametagConfig.TextSize,
-            Color = nametagConfig.TextColor,
-            OutlineColor = nametagConfig.TextOutlineColor,
-            Font = Enum.Font.Ubuntu,
-            Offset = Vector3.new(0, 1.5, 0)
-        },
-        Cham = {
-            Visible = chamConfig.Visible,
-            AlwaysOnTop = true,
-            Color = chamConfig.Color,
-            OutlineColor = chamConfig.OutlineColor,
-        },
-        OnDestroy = function(ESPObject)
-            table.remove(ESPObjects.Players, table.find(ESPObjects.Players, ESPObject))
-        end
-    })
+    local Object = ESPLibrary.new(Character, Config.Render.Players)
 
     if Object then
+        Object.Options.OnDestroy = function(ESPObject)
+            print("Player Index Destroy")
+            table.remove(ESPObjects.Players, table.find(ESPObjects.Players, ESPObject))
+        end
+
         table.insert(ESPObjects.Players, Object)
     end
 end
@@ -213,12 +220,14 @@ local function IndexAllPlayers()
             continue
         end
 
-        IndexPlayer(Player.Character:WaitForChild("Head"))
+        IndexPlayer(Player.Character)
     end
 end
 
 local function UpdatePlayerIndex()
-    
+    for _, ESPObject in ipairs(ESPObjects.Players) do
+        ESPObject:Update()
+    end
 end
 
 -->> Others:
