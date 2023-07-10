@@ -36,10 +36,10 @@ local ESPObjects = {
     Players = {},
     Rake = nil,
     FlareGun = nil,
-    Scraps = {},
-    Waypoints = {},
-    SupplyCrates = {},
-    Traps = {}
+    Scrap = {},
+    Waypoint = {},
+    SupplyCrate = {},
+    Trap = {}
 }
 
 
@@ -66,7 +66,6 @@ local Config = {
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 1, 0), 0.8 },
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -81,7 +80,6 @@ local Config = {
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(1, 0, 0), 0.5 },
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -96,7 +94,6 @@ local Config = {
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0, 0), 0.5 },
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -111,7 +108,6 @@ local Config = {
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0, 0), 0.5},
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -126,7 +122,6 @@ local Config = {
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0.5, 1), 0.7},
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -139,7 +134,6 @@ local Config = {
                 TextSize = 12,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0, 0), 0.5},
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -154,7 +148,6 @@ local Config = {
                 TextSize = 10,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0, 0), 0.5},
-                Font = Enum.Font.Ubuntu,
                 Offset = Vector3.new(0, 2, 0)
             },
             Cham = {
@@ -197,19 +190,48 @@ local function ModifyFallDamage()
 end
 
 -->> Render:
+local function UpdateIndex(category : string)
+    assert(category, "Missing argument #1 (string expected)")
+    assert(type(category), "Class not supported #1 (string expected)")
+
+    if type(ESPObjects[category]) == "table" then
+        for _, ESPObject in ipairs(ESPObjects[category]) do
+            ESPObject:Update(Config.Render[category])
+        end
+    else
+        ESPObjects[category]:Update(Config.Render[category])
+    end
+end
+
+--<>><><><><><><><><>--
 local function IndexPlayer(Character : Model)
     if not Character then
         return
     end
 
-    local Object = ESPLibrary.new(Character, Config.Render.Players)
+    local Options = Config.Render.Players
 
-    if Object then
-        Object.Options.OnDestroy = function(ESPObject)
+    local Object = ESPLibrary.new(Character, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = Character.Name .. " - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible,
+            Color = Options.Cham.Color,
+            OutlineColor = Options.Cham.OutlineColor,
+        },
+        OnDestroy = function(ESPObject)
             print("Player Index Destroy")
             table.remove(ESPObjects.Players, table.find(ESPObjects.Players, ESPObject))
         end
+    })
 
+    if Object then
         table.insert(ESPObjects.Players, Object)
     end
 end
@@ -224,11 +246,70 @@ local function IndexAllPlayers()
     end
 end
 
-local function UpdatePlayerIndex()
-    for _, ESPObject in ipairs(ESPObjects.Players) do
-        ESPObject:Update()
+--<>><><><><><><><><>--
+local function IndexRake()
+    local Rake = workspace:FindFirstChild("Rake")
+
+    if not Rake then
+        return
     end
+
+    local Options = Config.Render.Rake
+
+    ESPObjects.Rake = ESPLibrary.new(Rake, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = "The Rake - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible,
+            Color = Options.Cham.Color,
+            OutlineColor = Options.Cham.OutlineColor,
+        },
+        OnDestroy = function(ESPObject)
+            print("Rake Index Destroy")
+            ESPObjects.Rake = nil
+        end
+    })
 end
+
+--<>><><><><><><><><>--
+local function IndexFlareGun()
+    local FlareGun = workspace:FindFirstChild("FlareGunPickUp")
+
+    if not FlareGun then
+        return
+    end
+
+    local Options = Config.Render.FlareGun
+
+    ESPObjects.FlareGun = ESPLibrary.new(FlareGun, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = "Flare Gun - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible,
+            Color = Options.Cham.Color,
+            OutlineColor = Options.Cham.OutlineColor,
+        },
+        OnDestroy = function(ESPObject)
+            print("FlareGun Index Destroy")
+            ESPObjects.FlareGun = nil
+        end
+    })
+end
+
+--<>><><><><><><><><>--
+
 
 -->> Others:
 local function CleanUp()
@@ -274,18 +355,19 @@ do
     local Tab = Tabs.Movement
 
     local Blatant = Tab:Section("Blatant") do
+        local Options = Config.Movement
         Blatant:Toggle("No Stamina Drain", "Stamina will not be drained by running", function(bool)
-            Config.Movement.NoStaminaDrain = bool
+            Options.NoStaminaDrain = bool
         end)
 
         Blatant:Toggle("No Fall Damage", "Removes damage from falling", function(bool)
-            Config.Movement.NoFallDamage = bool
+            Options.NoFallDamage = bool
         end)
 
         Blatant:Label("")
 
-        Blatant:Keybind("Quick Run", "Automatically run without accelerating", Enum.KeyCode.Q, function()
-            
+        Blatant:Keybind("Quick Run", "Immediately run without accelerating", Enum.KeyCode.Q, function()
+            print("Quick Run!")
         end)
     end
 end
@@ -293,6 +375,54 @@ end
 -->> Render
 do
     local Tab = Tabs.Render
+
+    local SecPlayers = Tab:Section("Players") do
+        local Options = Config.Render.Players
+
+        SecPlayers:Toggle("Players Nametag Enabled", "Nametag that shows their name, distance, and health", function(bool)
+            Options.Nametag.Visible = bool
+            UpdateIndex("Players")
+        end)
+
+        SecPlayers:Toggle("Players Cham Enabled", "Cham that shows their glowing body through walls", function(bool)
+            Options.Cham.Visible = bool
+            UpdateIndex("Players")
+        end)
+
+        SecPlayers:Label("")
+    end
+
+    local SecRake = Tab:Section("Rake") do
+        local Options = Config.Render.Rake
+
+        SecRake:Toggle("Rake Nametag Enabled", "Nametag that shows The Rake name, distance, and health", function(bool)
+            Options.Nametag.Visible = bool
+            UpdateIndex("Rake")
+        end)
+
+        SecRake:Toggle("Rake Cham Enabled", "Cham that shows The Rake glowing body through walls", function(bool)
+            Options.Cham.Visible = bool
+            UpdateIndex("Rake")
+        end)
+
+        SecRake:Label("")
+    end
+
+    local SecFlareGun = Tab:Section("Flare Gun") do
+        local Options = Config.Render.FlareGun
+
+        SecFlareGun:Toggle("Flare Gun Nametag Enabled", "Nametag that shows its name and distance", function(bool)
+            Options.Nametag.Visible = bool
+            UpdateIndex("FlareGun")
+        end)
+
+        SecFlareGun:Toggle("Flare Gun Cham Enabled", "Cham that shows its glowing body through walls", function(bool)
+            Options.Cham.Visible = bool
+            UpdateIndex("FlareGun")
+        end)
+
+        SecFlareGun:Label("")
+    end
 end
 
 -->> Settings
@@ -303,6 +433,8 @@ do
         Menu:Keybind("Toggle GUI", "Press the keybind to hide or show GUI", Enum.KeyCode.RightControl, function()
             KavoUI:ToggleUI()
         end)
+
+        Menu:Label("")
     end
 
     local Themes = Tab:Section("Themes") do
@@ -310,10 +442,11 @@ do
     end
 end
 
---<< Initialize >>--
--- KavoUI.OnDestroy = CleanUp() -- Got kicked instead?
 
+--<< Initalize >>--
 IndexAllPlayers()
+IndexRake()
+IndexFlareGun()
 
 coroutine.wrap(function()
     task.wait(5)
@@ -322,7 +455,19 @@ coroutine.wrap(function()
     ModifyFallDamage()
 end)()
 
---<< Loops >>--
-coroutine.wrap(function()
 
+--<< Indexer >>--
+workspace.ChildAdded:Connect(function(child)
+    if child.Name == "Rake" then
+        child:WaitForChild("HumanoidRootPart")
+        IndexRake()
+    elseif child.Name == "FlareGunPickUp" then
+        IndexFlareGun()
+    end
+end)
+
+coroutine.wrap(function()
+    while task.wait(5) do
+        IndexAllPlayers()
+    end
 end)()

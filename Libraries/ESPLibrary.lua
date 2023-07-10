@@ -105,6 +105,7 @@ function ESPLibrary.new(Target : Instance, options : table)
 
         local Cham = options.Cham do
             local Highlight = self.Cham
+            Highlight.Enabled = Cham.Visible
             Highlight.DepthMode = Cham.AlwaysOnTop and Enum.HighlightDepthMode.AlwaysOnTop or Enum.HighlightDepthMode.Occluded
             Highlight.FillColor = Cham.Color[1]
             Highlight.FillTransparency = Cham.Color[2]
