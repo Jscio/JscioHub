@@ -3,6 +3,11 @@
     by Jscio
 ]]--
 
+--[[
+    TODO: Make `ESPObject:Update()` updates the only thing it gives.
+    TODO: Add notification system for when an object has spawned (Render Tab).
+]]--
+
 --<< Services >>--
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -49,11 +54,13 @@ local LocalPlayer = Players.LocalPlayer
 local Folders; Folders = {
     Filter = workspace:WaitForChild("Filter"),
     Debris = workspace:WaitForChild("Debris"),
-    MapFolder = workspace:WaitForChild("Map")
+    Map = workspace:WaitForChild("Map")
 }
 
 local ScrapSpawns = Folders.Filter:WaitForChild("ScrapSpawns")
 local LocationPoints = Folders.Filter:WaitForChild("LocationPoints")
+local SupplyCrates = Folders.Debris:WaitForChild("SupplyCrates")
+local TrapsFolder = Folders.Debris:WaitForChild("Traps")
 
 
 --<< Config >>--
@@ -413,6 +420,80 @@ local function IndexAllWaypoints()
     end
 end
 
+--<>><><><><><><><><>--
+local function IndexSupplyCrate(Box : Model)
+    if not Box then
+        return
+    end
+
+    local Options = Config.Render.SupplyCrate
+
+    local Object = ESPLibrary.new(Box, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = "Supply Crate - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible
+        },
+        OnDestroy = function(ESPObject)
+            print("SupplyCrate Index Destroy")
+            table.remove(ESPObjects.SupplyCrate, table.find(ESPObjects.SupplyCrate, ESPObject))
+        end
+    })
+
+    if Object then
+        table.insert(ESPObjects.SupplyCrate, Object)
+    end
+end
+
+local function IndexAllSupplyCrates()
+    for _, Box in ipairs(SupplyCrates:GetChildren()) do
+        IndexSupplyCrate(Box)
+    end
+end
+
+--<>><><><><><><><><>--
+local function IndexTrap(Trap : Model)
+    if not Trap then
+        return
+    end
+
+    local Options = Config.Render.Trap
+
+    local Object = ESPLibrary.new(Trap, {
+        Nametag = {
+            Visible = Options.Nametag.Visible,
+            Text = "Trap - {distance}",
+            TextSize = Options.Nametag.TextSize,
+            Color = Options.Nametag.Color,
+            OutlineColor = Options.Nametag.OutlineColor,
+            Offset = Options.Nametag.Offset
+        },
+        Cham = {
+            Visible = Options.Cham.Visible
+        },
+        OnDestroy = function(ESPObject)
+            print("Trap Index Destroy")
+            table.remove(ESPObjects.Trap, table.find(ESPObjects.Trap, ESPObject))
+        end
+    })
+
+    if Object then
+        table.insert(ESPObjects.Trap, Object)
+    end
+end
+
+local function IndexAllTraps()
+    for _, Trap in ipairs(TrapsFolder:GetChildren()) do
+        IndexTrap(Trap)
+    end
+end
+
 -->> Others:
 local function CleanUp()
     warn("Clean Up?")
@@ -602,6 +683,30 @@ do
             end
         })
     end
+
+    Tab:CreateSection("Supply Crates") do
+        local Options = Config.Render.SupplyCrate
+
+        Tab:CreateToggle({
+            Name = "Supply Crate Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.SupplyCrate.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("SupplyCrate")
+            end
+        })
+
+        Tab:CreateToggle({
+            Name = "Supply Crate Cham Enabled",
+            CurrentValue = Options.Cham.Visible,
+            Flag = "Render.SupplyCrate.Cham.Visible",
+            Callback = function(bool)
+                Options.Cham.Visible = bool
+                UpdateIndex("SupplyCrate")
+            end
+        })
+    end
 end
 
 
@@ -611,6 +716,8 @@ IndexRake()
 IndexFlareGun()
 IndexAllScraps()
 IndexAllWaypoints()
+IndexAllSupplyCrates()
+IndexAllTraps()
 
 coroutine.wrap(function()
     task.wait(5)
@@ -635,6 +742,14 @@ for _, Spawner in ipairs(ScrapSpawns:GetChildren()) do
         IndexScrap(child:WaitForChild("Scrap"))
     end)
 end
+
+SupplyCrates.ChildAdded:Connect(function(child)
+    IndexSupplyCrate(child)
+end)
+
+TrapsFolder.ChildAdded:Connect(function(child)
+    IndexTrap(child)
+end)
 
 coroutine.wrap(function()
     while task.wait(5) do

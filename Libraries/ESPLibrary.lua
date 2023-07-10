@@ -95,7 +95,6 @@ function ESPLibrary.new(Target : Instance, options : table)
             Billboard.StudsOffset = Nametag.Offset
 
             local TextLabel = Billboard.TextLabel
-            TextLabel.Text = Nametag.Text
             TextLabel.TextSize = Nametag.TextSize
             TextLabel.Font = Nametag.Font
             TextLabel.TextColor3 = Nametag.Color[1]
