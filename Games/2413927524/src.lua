@@ -27,7 +27,7 @@ end
 
 --<< Libraries >>--
 local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/ESPLibrary.lua"))()
-local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/UILibrary.lua"))() -- Modified version of Kavo UI Library
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))() -- Arrayfield sucks, use Rayfield instead
 
 
 --<< Variables >>--
@@ -338,107 +338,127 @@ local function CleanUp()
 end
 
 --<< GUI >>--
-local Window = KavoUI.Window("The Rake Remastered - JscioHub", "DarkTheme")
+local Window = Rayfield:CreateWindow({
+    Name = "Jscio - The Rake Remastered",
+    LoadingTitle = "The Rake Remastered Script",
+    LoadingSubtitle = "by JsioHub",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "JscioHub"
+    }
+})
 
 local Tabs = {
-    Movement = Window:Tab("Movement"),
-    Render = Window:Tab("Render"),
-    Utility = Window:Tab("Utility"),
-    World = Window:Tab("World"),
-    Misc = Window:Tab("Misc"),
-    Settings = Window:Tab("Settings"),
-    Credits = Window:Tab("Credits")
+    Movement = Window:CreateTab("Movement"),
+    Render = Window:CreateTab("Render"),
+    Utility = Window:CreateTab("Utility"),
+    World = Window:CreateTab("World"),
+    Misc = Window:CreateTab("Misc"),
+    Settings = Window:CreateTab("Settings"),
+    Credits = Window:CreateTab("Credits")
 }
 
 -->> Movement
 do
     local Tab = Tabs.Movement
 
-    local Blatant = Tab:Section("Blatant") do
+    Tab:CreateSection("Blatant") do
         local Options = Config.Movement
-        Blatant:Toggle("No Stamina Drain", "Stamina will not be drained by running", function(bool)
-            Options.NoStaminaDrain = bool
-        end)
 
-        Blatant:Toggle("No Fall Damage", "Removes damage from falling", function(bool)
-            Options.NoFallDamage = bool
-        end)
+        Tab:CreateToggle({
+            Name = "No Stamina Drain",
+            CurrentValue = Options.NoStaminaDrain,
+            Flag = "Movement.NoStaminaDrain",
+            Callback = function(bool)
+                Options.NoStaminaDrain = bool
+            end
+        })
 
-        Blatant:Label("")
-
-        Blatant:Keybind("Quick Run", "Immediately run without accelerating", Enum.KeyCode.Q, function()
-            print("Quick Run!")
-        end)
+        Tab:CreateToggle({
+            Name = "No Fall Damage",
+            CurrentValue = Options.NoFallDamage,
+            Flag = "Movement.NoFallDamage",
+            Callback = function(bool)
+                Options.NoFallDamage = bool
+            end
+        })
     end
 end
 
 -->> Render
 do
     local Tab = Tabs.Render
-
-    local SecPlayers = Tab:Section("Players") do
+    
+    Tab:CreateSection("Players") do
         local Options = Config.Render.Players
 
-        SecPlayers:Toggle("Players Nametag Enabled", "Nametag that shows their name, distance, and health", function(bool)
-            Options.Nametag.Visible = bool
-            UpdateIndex("Players")
-        end)
+        Tab:CreateToggle({
+            Name = "Players Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.Players.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("Players")
+            end
+        })
 
-        SecPlayers:Toggle("Players Cham Enabled", "Cham that shows their glowing body through walls", function(bool)
-            Options.Cham.Visible = bool
-            UpdateIndex("Players")
-        end)
-
-        SecPlayers:Label("")
+        Tab:CreateToggle({
+            Name = "Players Cham Enabled",
+            CurrentValue = Options.Cham.Visible,
+            Flag = "Render.Players.Cham.Visible",
+            Callback = function(bool)
+                Options.Cham.Visible = bool
+                UpdateIndex("Players")
+            end
+        })
     end
 
-    local SecRake = Tab:Section("Rake") do
+    Tab:CreateSection("Rake") do
         local Options = Config.Render.Rake
 
-        SecRake:Toggle("Rake Nametag Enabled", "Nametag that shows The Rake name, distance, and health", function(bool)
-            Options.Nametag.Visible = bool
-            UpdateIndex("Rake")
-        end)
+        Tab:CreateToggle({
+            Name = "Rake Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.Rake.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("Rake")
+            end
+        })
 
-        SecRake:Toggle("Rake Cham Enabled", "Cham that shows The Rake glowing body through walls", function(bool)
-            Options.Cham.Visible = bool
-            UpdateIndex("Rake")
-        end)
-
-        SecRake:Label("")
+        Tab:CreateToggle({
+            Name = "Rake Cham Enabled",
+            CurrentValue = Options.Cham.Visible,
+            Flag = "Render.Rake.Cham.Visible",
+            Callback = function(bool)
+                Options.Cham.Visible = bool
+                UpdateIndex("Rake")
+            end
+        })
     end
 
-    local SecFlareGun = Tab:Section("Flare Gun") do
+    Tab:CreateSection("Flare Gun") do
         local Options = Config.Render.FlareGun
 
-        SecFlareGun:Toggle("Flare Gun Nametag Enabled", "Nametag that shows its name and distance", function(bool)
-            Options.Nametag.Visible = bool
-            UpdateIndex("FlareGun")
-        end)
+        Tab:CreateToggle({
+            Name = "Flare Gun Nametag Enabled",
+            CurrentValue = Options.Nametag.Visible,
+            Flag = "Render.FlareGun.Nametag.Visible",
+            Callback = function(bool)
+                Options.Nametag.Visible = bool
+                UpdateIndex("FlareGun")
+            end
+        })
 
-        SecFlareGun:Toggle("Flare Gun Cham Enabled", "Cham that shows its glowing body through walls", function(bool)
-            Options.Cham.Visible = bool
-            UpdateIndex("FlareGun")
-        end)
-
-        SecFlareGun:Label("")
-    end
-end
-
--->> Settings
-do
-    local Tab = Tabs.Settings
-    
-    local Menu = Tab:Section("Menu") do
-        Menu:Keybind("Toggle GUI", "Press the keybind to hide or show GUI", Enum.KeyCode.RightControl, function()
-            KavoUI:ToggleUI()
-        end)
-
-        Menu:Label("")
-    end
-
-    local Themes = Tab:Section("Themes") do
-        
+        Tab:CreateToggle({
+            Name = "Flare Gun Cham Enabled",
+            CurrentValue = Options.Cham.Visible,
+            Flag = "Render.FlareGun.Cham.Visible",
+            Callback = function(bool)
+                Options.Cham.Visible = bool
+                UpdateIndex("FlareGun")
+            end
+        })
     end
 end
 

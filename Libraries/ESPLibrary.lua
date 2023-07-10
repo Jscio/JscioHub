@@ -118,6 +118,10 @@ function ESPLibrary.new(Target : Instance, options : table)
         if self.Observer then
             self.Observer:Disconnect()
         end
+        
+        self.Nametag:Destroy()
+        self.Cham:Destroy()
+
         options.OnDestroy(self)
         table.remove(ESPObjects, table.find(ESPObjects, self))
         self = nil
