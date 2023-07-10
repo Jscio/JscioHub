@@ -32,6 +32,15 @@ local KavoUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/
 
 --<< Variables >>--
 local Hooks = {}
+local ESPObjects = {
+    Players = {},
+    Rake = nil,
+    FlareGun = nil,
+    Scraps = {},
+    Waypoints = {},
+    SupplyCrates = {},
+    Traps = {}
+}
 
 
 --<< Game Objects >>--
@@ -49,11 +58,90 @@ local Config = {
     Movement = {
         NoStaminaDrain = false,
         NoFallDamage = false
+    },
+    Render = {
+        Nametag = {
+            Players = {
+                Visible = true,
+                TextSize = 8,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(0, 1, 0), 0.8 }
+            },
+            Rake = {
+                Visible = true,
+                TextSize = 10,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(1, 0, 0), 0.5 }
+            },
+            FlareGun = {
+                Visible = true,
+                TextSize = 10,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
+            },
+            Scrap = {
+                Visible = true,
+                TextSize = 8,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
+            },
+            Waypoint = {
+                Visible = true,
+                TextSize = 10,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(0, 0.5, 1), 0.7}
+            },
+            SupplyCrate = {
+                Visible = true,
+                TextSize = 10,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
+            },
+            Trap = {
+                Visible = false,
+                TextSize = 8,
+                TextColor = { Color3.new(1, 1, 1), 0 },
+                TextOutlineColor = { Color3.new(0, 0, 0), 0.5}
+            }
+        },
+        Cham = {
+            Players = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(0, 1, 0), 0 }
+            },
+            Rake = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 0, 0), 0 }
+            },
+            FlareGun = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 0, 1), 0 }
+            },
+            Scrap = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 1, 0), 0 }
+            },
+            SupplyCrate = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 1, 0), 0 }
+            },
+            Trap = {
+                Visible = true,
+                Color = { Color3.new(1, 1, 1), 0.9 },
+                OutlineColor = { Color3.new(1, 0, 0), 0 }
+            }
+        }
     }
 }
 
 
 --<< Functions >>--
+-->> Movement:
 local function ModifyStamina()
     for _, v in pairs(getloadedmodules()) do
 		if v.Name == "M_H" then
@@ -81,6 +169,59 @@ local function ModifyFallDamage()
 	end)
 end
 
+-->> Render:
+local function IndexPlayer(Character : Model)
+    if not Character then
+        return
+    end
+
+    local nametagConfig = Config.Render.Nametag.Players
+    local chamConfig = Config.Render.Cham.Players
+
+    local Object = ESPLibrary.new(Character, {
+        Visible = true,
+        Nametag = {
+            Visible = nametagConfig.Visible,
+            AlwaysOnTop = true,
+            MaxDistance = math.huge,
+            Text = Character.Name .. " - {distance}",
+            TextSize = nametagConfig.TextSize,
+            Color = nametagConfig.TextColor,
+            OutlineColor = nametagConfig.TextOutlineColor,
+            Font = Enum.Font.Ubuntu,
+            Offset = Vector3.new(0, 1.5, 0)
+        },
+        Cham = {
+            Visible = chamConfig.Visible,
+            AlwaysOnTop = true,
+            Color = chamConfig.Color,
+            OutlineColor = chamConfig.OutlineColor,
+        },
+        OnDestroy = function(ESPObject)
+            table.remove(ESPObjects.Players, table.find(ESPObjects.Players, ESPObject))
+        end
+    })
+
+    if Object then
+        table.insert(ESPObjects.Players, Object)
+    end
+end
+
+local function IndexAllPlayers()
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player == LocalPlayer then
+            continue
+        end
+
+        IndexPlayer(Player.Character)
+    end
+end
+
+local function UpdatePlayerIndex()
+    
+end
+
+-->> Others:
 local function CleanUp()
     for _, v in pairs(getloadedmodules()) do
 		if v.Name == "M_H" then
@@ -90,6 +231,18 @@ local function CleanUp()
 	end
 
     hookmetamethod(game, "__namecall", Hooks.FallDamage)
+
+    for key, category in pairs(ESPObjects) do
+        if type(category) == "table" then
+            for idx, ESPObject in ipairs(category) do
+                ESPObject:Destroy()
+                table.remove(category, idx)
+            end
+        else
+            category:Destroy()
+            ESPObjects[key] = nil
+        end
+    end
 end
 
 --<< GUI >>--
@@ -100,7 +253,7 @@ local Tabs = {
     Render = Window:Tab("Render"),
     Utility = Window:Tab("Utility"),
     World = Window:Tab("World"),
-    Others = Window:Tab("Others"),
+    Misc = Window:Tab("Misc"),
     Settings = Window:Tab("Settings"),
     Credits = Window:Tab("Credits")
 }
@@ -117,7 +270,18 @@ do
         Blatant:Toggle("No Fall Damage", "Removes damage from falling", function(bool)
             Config.Movement.NoFallDamage = bool
         end)
+
+        Blatant:Label("")
+
+        Blatant:Keybind("Quick Run", "Automatically run without accelerating", Enum.KeyCode.Q, function()
+            
+        end)
     end
+end
+
+-->> Render
+do
+    local Tab = Tabs.Render
 end
 
 -->> Settings
@@ -138,9 +302,16 @@ end
 --<< Initialize >>--
 KavoUI.OnDestroy = CleanUp()
 
+IndexAllPlayers()
+
 coroutine.wrap(function()
     task.wait(5)
 
     ModifyStamina()
     ModifyFallDamage()
+end)()
+
+--<< Loops >>--
+coroutine.wrap(function()
+
 end)()

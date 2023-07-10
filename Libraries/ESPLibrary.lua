@@ -69,6 +69,10 @@ end
 local ESPLibrary = {}
 
 function ESPLibrary.new(Target : Instance, options : table)
+    if ESPLibrary.HasMark(Target) then
+        return
+    end
+
     assert(Target, "missing argument #1 (Instance expected)")
     if options == nil then
         options = {}
@@ -177,6 +181,14 @@ function ESPLibrary.new(Target : Instance, options : table)
 
     table.insert(ESPObjects, self)
     return self
+end
+
+function ESPLibrary.Mark(Object : Instance)
+    Object:SetAttribute("Mark", true)
+end
+
+function ESPLibrary.HasMark(Object : Instance)
+    return Object:GetAttribute("Mark")
 end
 
 function ESPLibrary:Unload()
