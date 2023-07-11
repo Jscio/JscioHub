@@ -20,7 +20,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.1.5")
+print("JscioHub v0.1.6")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -32,9 +32,9 @@ end
 
 
 --<< Libraries >>--
-local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/ESPLibrary.lua"))()
+local ESPLibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/ESPLibrary.lua"))()
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))() -- Arrayfield sucks, use Rayfield instead
-local AdditionalGUI = loadstring(game:HttpGet(""))()
+local AdditionalGUI = loadstring(game:HttpGet(getgenv().JscioHub .. "/Games/2413927524/AdditionalGUI.lua"))()
 
 
 --<< Variables >>--
@@ -968,8 +968,39 @@ do
     end
 end
 
+-->> Misc
+do
+    local Tab = Tabs.Misc
+    local Options = Config.Misc
+
+    Tab:CreateSection("Additional GUI") do
+        Tab:CreateToggle({
+            Name = "Time & Power GUI",
+            CurrentValue = Options.TimeNPower,
+            Flag = "Misc.TimeNPower",
+            Callback = function(bool)
+                Options.TimeNPower = bool
+
+                if AdditionalGUI.Constructed then
+                    if bool then
+                        AdditionalGUI.TimePowerUI:Open()
+                    else
+                        AdditionalGUI.TimePowerUI:Close()
+                    end
+                end
+            end
+        })
+    end
+end
+
 
 --<< Initalize >>--
+AdditionalGUI:Construct() do
+    if Config.Misc.TimeNPower then
+        AdditionalGUI.TimePowerUI:Open()
+    end
+end
+
 IndexAllPlayers()
 IndexRake()
 IndexFlareGun()
@@ -986,7 +1017,7 @@ coroutine.wrap(function()
 end)()
 
 
---<< Indexer >>--
+--<< Updater >>--
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "Rake" then
         child:WaitForChild("HumanoidRootPart")
@@ -1008,6 +1039,20 @@ end)
 
 TrapsFolder.ChildAdded:Connect(function(child)
     IndexTrap(child)
+end)
+
+local TimerValue = ReplicatedStorage:WaitForChild("Timer")
+TimerValue:GetPropertyChangedSignal("Value"):Connect(function()
+    if Config.Misc.TimeNPower and AdditionalGUI.Constructed then
+        AdditionalGUI.TimePowerUI:UpdateTime(TimerValue.Value)
+    end
+end)
+
+local PowerLevel = ReplicatedStorage:WaitForChild("PowerValues"):WaitForChild("PowerLevel")
+PowerLevel:GetPropertyChangedSignal("Value"):Connect(function()
+    if Config.Misc.TimeNPower and AdditionalGUI.Constructed then
+        AdditionalGUI.TimePowerUI:UpdatePower(PowerLevel.Value)
+    end
 end)
 
 coroutine.wrap(function()
