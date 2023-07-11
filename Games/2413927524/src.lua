@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.1-1")
+print("JscioHub v0.2.2")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -169,7 +169,8 @@ local Config = {
             AlwaysDay = false,
             AlwaysNight = false,
             NoBloodHour = false
-        }
+        },
+        ModifyDoorKnock = true
     },
     Misc = {
         TimeNPower = true,
@@ -608,6 +609,34 @@ local function UpdateToNight()
     end
 end
 
+--< Door:
+local doorKnockConnection
+
+local function SetKnockConnection(bool)
+    for _, connection in ipairs(getconnections(Folders.Map.SafeHouse.Door.Door.DoorGUIPart.ProximityPrompt.Triggered)) do
+        if bool then
+            if doorKnockConnection then
+                doorKnockConnection:Disconnect()
+            end
+
+            connection:Enable()
+            continue
+        end
+        
+        connection:Disable()
+    end
+end
+
+local function ModifyDoorKnock()
+    SetKnockConnection(false)
+
+    doorKnockConnection = Folders.Map.SafeHouse.Door.Door.DoorGUIPart.ProximityPrompt.Triggered:Connect(function(trigger)
+        if trigger == LocalPlayer then
+            Folders.Map.SafeHouse.Door.RemoteEvent:FireServer("Door")
+        end
+    end)
+end
+
 -----<< Misc >>-----
 --< Supply Drop Bypass:
 SetSupplyCrateConnection = function(bool, Box)
@@ -1017,6 +1046,41 @@ do
             end
         })
     end
+
+    Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
+    Tab:CreateSection("Map Modification") do
+        local Options = Config.World
+
+        Tab:CreateLabel("You must be close to The Safehouse to do this.")
+
+        Tab:CreateKeybind({
+            Name = "Open The Safehouse Door",
+            CurrentKeybind = "R",
+            ModifyDoorKnock = false,
+            Flag = "World_OpenDoorKeybind",
+            Callback = function()
+                Folders.Map.SafeHouse.Door.RemoteEvent:FireServer("Door")
+            end
+        })
+
+        Tab:CreateLabel("When you knock the door at The Safehouse. It opens the door instead.")
+
+        Tab:CreateToggle({
+            Name = "Modify Door Knocking",
+            CurrentValue = Options.ModifyDoorKnock,
+            Flag = "World_ModifyDoorKnock",
+            Callback = function(bool)
+                Options.ModifyDoorKnock = bool
+                
+                if bool then
+                    ModifyDoorKnock()
+                else
+                    SetKnockConnection(true)
+                end
+            end
+        })
+    end
+
 end
 
 -----<< Misc >>-----
@@ -1119,7 +1183,7 @@ coroutine.wrap(function()
 end)()
 
 ----------<< Loop >>----------
-while true do
+RunService.Heartbeat:Connect(function()
     if Config.World.Sky.AlwaysDay then
         UpdateToDay()
     end
@@ -1131,8 +1195,4 @@ while true do
     if Config.World.NoFog then
         EraseFog()
     end
-
-    for i = 1, 3, 1 do
-        RunService.Heartbeat:Wait()
-    end
-end
+end)

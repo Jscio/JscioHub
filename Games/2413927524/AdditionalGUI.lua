@@ -289,14 +289,10 @@ function AdditionalGUI:Construct()
 		}
 
 		function self.SupplyDropGUI:Open()
-			UserInputService.MouseIconEnabled = true
-			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 			self.ScreenGui.Enabled = true
 		end
 
 		function self.SupplyDropGUI:Close()
-			UserInputService.MouseIconEnabled = false
-			UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 			self.ScreenGui.Enabled = false
 		end
 
@@ -313,6 +309,7 @@ function AdditionalGUI:Construct()
 			local connection
 
 			Item.ImageButton.Image = "rbxassetid://" .. item.ImageID.Value
+			Item.ImageButton.Modal = true
 			Item.Visible = true
 			
 			if item.Taken.Value then
