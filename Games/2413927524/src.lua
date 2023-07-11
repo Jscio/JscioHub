@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-5")
+print("JscioHub v0.2.2-6")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -680,8 +680,14 @@ local function HandleDeath()
     coroutine.wrap(function()
         repeat
             RunService.Heartbeat:Wait()
+        until LocalPlayer:WaitForChild("Started").Value == false
+        print("Player's dead dead")
+
+        repeat
+            RunService.Heartbeat:Wait()
         until LocalPlayer:WaitForChild("Started").Value == true
-        print("Player starter")
+
+        print("Modify Stamina")
         ModifyStamina()
     end)()
 end
