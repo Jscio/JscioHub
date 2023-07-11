@@ -233,6 +233,7 @@ function AdditionalGUI:Construct()
 			ItemPlaceHolder.BorderSizePixel = 0
 			ItemPlaceHolder.BackgroundColor3 = Color3.fromRGB(175, 175, 175)
 			ItemPlaceHolder.Parent = Folder
+			ItemPlaceHolder.Visible = false
 
 			local UICorner1 = Instance.new("UICorner")
 			UICorner1.Parent = ItemPlaceHolder
@@ -302,6 +303,7 @@ function AdditionalGUI:Construct()
 			local connection
 
 			Item.ImageButton.Image = "rbxassetid://" .. item.ImageID.Value
+			Item.Visible = true
 			
 			if item.Taken.Value then
 				Item.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
