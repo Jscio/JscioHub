@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.1")
+print("JscioHub v0.2.1-1")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -621,6 +621,10 @@ SetSupplyCrateConnection = function(bool, Box)
 end
 
 ModifySupplyCratePrompt = function(Box : Model)
+    if not Box:FindFirstChild("GUIPart") then -- Supply box is falling. After falling, it will call another child added event. Then back to this.
+        return
+    end
+
     SetSupplyCrateConnection(false, Box)
 
     Box.GUIPart.ProximityPrompt.Triggered:Connect(function(trigger)

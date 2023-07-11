@@ -220,10 +220,19 @@ function AdditionalGUI:Construct()
 			UIStroke.Color = Color3.fromRGB(255, 255, 255)
 			UIStroke.Parent = ItemsContainer
 
-			local UIGradient1 = Instance.new("UIGradient")
-			UIGradient1.Rotation = 90
-			UIGradient1.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(125, 125, 125))
-			UIGradient1.Parent = ItemsContainer
+			local UIGradient = Instance.new("UIGradient")
+			UIGradient.Rotation = 90
+			UIGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(125, 125, 125))
+			UIGradient.Parent = ItemsContainer
+
+			local UIGridLayout = Instance.new("UIGridLayout")
+			UIGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			UIGridLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			UIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			UIGridLayout.CellSize = UDim2.new(0.319, 0, 0.475, 0)
+			UIGridLayout.CellPadding = UDim2.new(0.015, 0, 0.03, 0)
+
+			UIGridLayout.Parent = ItemsContainer
 		end
 
 		local Folder = Instance.new("Folder", Container)
@@ -236,18 +245,18 @@ function AdditionalGUI:Construct()
 			ItemPlaceHolder.Parent = Folder
 			ItemPlaceHolder.Visible = false
 
-			local UICorner1 = Instance.new("UICorner")
-			UICorner1.Parent = ItemPlaceHolder
+			local UICorner = Instance.new("UICorner")
+			UICorner.Parent = ItemPlaceHolder
 
 			local UIGradient = Instance.new("UIGradient")
 			UIGradient.Rotation = 90
 			UIGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(125, 125, 125))
 			UIGradient.Parent = ItemPlaceHolder
 
-			local UIStroke1 = Instance.new("UIStroke")
-			UIStroke1.Thickness = 2
-			UIStroke1.Color = Color3.fromRGB(29, 29, 29)
-			UIStroke1.Parent = ItemPlaceHolder
+			local UIStroke = Instance.new("UIStroke")
+			UIStroke.Thickness = 2
+			UIStroke.Color = Color3.fromRGB(29, 29, 29)
+			UIStroke.Parent = ItemPlaceHolder
 
 			local ImageButton = Instance.new("ImageButton")
 			ImageButton.Size = UDim2.new(1, 0, 1, 0)
