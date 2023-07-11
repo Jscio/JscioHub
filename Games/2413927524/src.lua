@@ -20,7 +20,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.1.6")
+print("JscioHub v0.1.7")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -33,7 +33,7 @@ end
 
 --<< Libraries >>--
 local ESPLibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/ESPLibrary.lua"))()
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))() -- Arrayfield sucks, use Rayfield instead
+local GUILibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/GUILibrary.lua" ))() -- Modified version of Rayfield
 local AdditionalGUI = loadstring(game:HttpGet(getgenv().JscioHub .. "/Games/2413927524/AdditionalGUI.lua"))()
 
 
@@ -308,7 +308,7 @@ local function IndexRake()
     })
 
     if ESPObjects.Rake and SecondaryConfig.Render.RakeNotification then
-        Rayfield:Notify({
+        GUILibrary:Notify({
             Title = "The Rake Notifier",
             Content = "The Rake has emerged from its cave.",
             Duration = 3
@@ -346,7 +346,7 @@ local function IndexFlareGun()
     })
 
     if ESPObjects.FlareGun and SecondaryConfig.Render.FlareGunNotification then
-        Rayfield:Notify({
+        GUILibrary:Notify({
             Title = "Flare Gun Notifier",
             Content = "Flare Gun has been dropped",
             Duration = 3
@@ -486,7 +486,7 @@ local function IndexSupplyCrate(Box : Model)
 
     if Object then
         if SecondaryConfig.Render.SupplyCrateNotification then
-            Rayfield:Notify({
+            GUILibrary:Notify({
                 Title = "Supply Crate Notifier",
                 Content = "Supply Crate has been dropped",
                 Duration = 3
@@ -622,7 +622,7 @@ end
 
 
 --<< GUI >>--
-local Window = Rayfield:CreateWindow({
+local Window = GUILibrary:CreateWindow({
     Name = "JscioHub - The Rake Remastered",
     LoadingTitle = "The Rake Remastered Script",
     LoadingSubtitle = "by JscioHub",
@@ -920,7 +920,7 @@ do
                 if bool then
                     if not identity and Options.AlwaysNight then
                         identity = true
-                        Rayfield.Flags["World.Sky.AlwaysNight"]:Set(false)
+                        GUILibrary.Flags["World.Sky.AlwaysNight"]:Set(false)
                         identity = false
                     end
                 else
@@ -943,7 +943,7 @@ do
                 if bool then
                     if not identity and Options.AlwaysDay then
                         identity = true
-                        Rayfield.Flags["World.Sky.AlwaysDay"]:Set(false)
+                        GUILibrary.Flags["World.Sky.AlwaysDay"]:Set(false)
                         identity = false
                     end
                 else
