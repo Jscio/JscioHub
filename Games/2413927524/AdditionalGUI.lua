@@ -177,6 +177,7 @@ function AdditionalGUI:Construct()
 	do
 		local SupplyDropGUI = Instance.new("ScreenGui") do
 			SupplyDropGUI.Name = "SupplyDropGUI"
+			SupplyDropGUI.Enabled = false
 			SupplyDropGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 			SupplyDropGUI.ResetOnSpawn = false
 		end
