@@ -20,7 +20,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.1.4")
+print("JscioHub v0.1.5")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -34,6 +34,7 @@ end
 --<< Libraries >>--
 local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Jscio/JscioHub/main/Libraries/ESPLibrary.lua"))()
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))() -- Arrayfield sucks, use Rayfield instead
+local AdditionalGUI = loadstring(game:HttpGet(""))()
 
 
 --<< Variables >>--
@@ -174,6 +175,9 @@ local Config = {
             AlwaysNight = false,
             NoBloodHour = false
         }
+    },
+    Misc = {
+        TimeNPower = true
     }
 }
 
@@ -471,10 +475,11 @@ local function IndexSupplyCrate(Box : Model)
             Offset = Options.Nametag.Offset
         },
         Cham = {
-            Visible = Options.Cham.Visible
+            Visible = Options.Cham.Visible,
+            Color = Options.Cham.Color,
+            OutlineColor = Options.Cham.OutlineColor,
         },
         OnDestroy = function(ESPObject)
-            print("SupplyCrate Index Destroy")
             table.remove(ESPObjects.SupplyCrate, table.find(ESPObjects.SupplyCrate, ESPObject))
         end
     })
@@ -520,7 +525,6 @@ local function IndexTrap(Trap : Model)
             Visible = Options.Cham.Visible
         },
         OnDestroy = function(ESPObject)
-            print("Trap Index Destroy")
             table.remove(ESPObjects.Trap, table.find(ESPObjects.Trap, ESPObject))
         end
     })
