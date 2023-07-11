@@ -20,7 +20,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.1.3")
+print("JscioHub v0.1.4")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -243,7 +243,7 @@ local function IndexPlayer(Character : Model)
     local Object = ESPLibrary.new(Character, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = Character.Name .. " - {distance}",
+            Text = Character.Name .. " - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -287,7 +287,7 @@ local function IndexRake()
     ESPObjects.Rake = ESPLibrary.new(Rake, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "The Rake - {distance}",
+            Text = "The Rake - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -325,7 +325,7 @@ local function IndexFlareGun()
     ESPObjects.FlareGun = ESPLibrary.new(FlareGun, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "Flare Gun - {distance}",
+            Text = "Flare Gun - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -379,7 +379,7 @@ local function IndexScrap(Scrap : Model)
     local Object = ESPLibrary.new(Scrap, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "Scrap - Lv." .. tostring(Scrap.Parent.LevelVal.Value) .. " - {distance}",
+            Text = "Scrap - Lvl " .. tostring(Scrap.Parent.LevelVal.Value) .. " - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -426,7 +426,7 @@ local function IndexWaypoint(LocationPoint : Part)
     local Object = ESPLibrary.new(LocationPoint, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "The " .. text .. " - {distance}",
+            Text = "The " .. text .. " - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -464,7 +464,7 @@ local function IndexSupplyCrate(Box : Model)
     local Object = ESPLibrary.new(Box, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "Supply Crate - {distance}",
+            Text = "Supply Crate - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -510,7 +510,7 @@ local function IndexTrap(Trap : Model)
     local Object = ESPLibrary.new(Trap, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "Trap - {distance}",
+            Text = "Trap - {distance} studs",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -1018,7 +1018,7 @@ while true do
         UpdateToDay()
     end
 
-    if Config.World.Sky.AlwaysDay then
+    if Config.World.Sky.AlwaysNight then
         UpdateToNight()
     end
 
