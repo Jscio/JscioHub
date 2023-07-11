@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-8")
+print("JscioHub v0.2.3")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -676,6 +676,8 @@ ModifySupplyCratePrompt = function(Box : Model)
 end
 
 -----<< Others >>-----
+local SetupDeathDetection
+
 local function HandleDeath()
     coroutine.wrap(function()
         repeat
@@ -696,7 +698,7 @@ local function HandleDeath()
     end)()
 end
 
-local function SetupDeathDetection()
+SetupDeathDetection = function()
     LocalPlayer.Character.Humanoid.Died:Connect(function()
         print("Death")
         HandleDeath()
