@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-3")
+print("JscioHub v0.2.2-4")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -677,11 +677,18 @@ end
 
 -----<< Others >>-----
 local function HandleDeath()
-    ModifyStamina()
+    coroutine.wrap(function()
+        repeat
+            RunService.Heartbeat:Wait()
+        until LocalPlayer:WaitForChild("Started").Value == true
+        
+        ModifyStamina()
+    end)()
 end
 
 local function SetupDeathDetection()
     LocalPlayer.Character.Humanoid.Died:Connect(function()
+        print("Death")
         HandleDeath()
         SetupDeathDetection()
     end)
@@ -746,9 +753,6 @@ do
             Flag = "Movement_NoStaminaDrain",
             Callback = function(bool)
                 Options.NoStaminaDrain = bool
-                if bool then
-                    ModifyStamina()
-                end
             end
         })
 
@@ -1146,7 +1150,7 @@ IndexAllSupplyCrates()
 IndexAllTraps()
 
 coroutine.wrap(function()
-    task.wait(5)
+    task.wait(3)
 
     ModifyStamina()
     ModifyFallDamage()
