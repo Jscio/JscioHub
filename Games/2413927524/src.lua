@@ -7,20 +7,19 @@
     TODO: Make `ESPObject:Update()` updates the only thing it gives.
 ]]--
 
---<< Services >>--
+----------<< Services >>----------
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 
-
---<< Checks >>--
+----------<< Checks >>----------
 if not hookfunction or not hookmetamethod then
     game:GetService("Players").LocalPlayer:Kick("Functions missing #2 (`hookfunction`, `hookmetamethod` expected)")
     return
 end
 
-print("JscioHub v0.1.8")
+print("JscioHub v0.1.9")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -30,14 +29,12 @@ if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character the
     print("Localplayer character found!")
 end
 
-
---<< Libraries >>--
+----------<< Libraries >>----------
 local ESPLibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/ESPLibrary.lua"))()
 local GUILibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/GUILibrary.lua" ))() -- Modified version of Rayfield
 local AdditionalGUI = loadstring(game:HttpGet(getgenv().JscioHub .. "/Games/2413927524/AdditionalGUI.lua"))()
 
-
---<< Variables >>--
+----------<< Variables >>----------
 local Hooks = {}
 local ESPObjects = {
     Players = {},
@@ -49,8 +46,7 @@ local ESPObjects = {
     Trap = {}
 }
 
-
---<< Game Objects >>--
+----------<< Game Objects >>----------
 local LocalPlayer = Players.LocalPlayer
 
 local Folders; Folders = {
@@ -59,8 +55,7 @@ local Folders; Folders = {
     Map = workspace:WaitForChild("Map")
 }
 
-
---<< Config >>--
+----------<< Configuration >>----------
 local Config = {
     Movement = {
         NoStaminaDrain = false,
@@ -177,7 +172,8 @@ local Config = {
         }
     },
     Misc = {
-        TimeNPower = true
+        TimeNPower = true,
+        BypassSupplyCrateLock = true
     }
 }
 
@@ -189,9 +185,8 @@ local SecondaryConfig = {
     }
 }
 
-
---<< Functions >>--
--->> Movement:
+----------<< Functions >>----------
+-----<< Movement >>-----
 local function ModifyStamina()
     for _, v in pairs(getloadedmodules()) do
 		if v.Name == "M_H" then
@@ -219,7 +214,7 @@ local function ModifyFallDamage()
 	end)
 end
 
--->> Render:
+-----<< Render >>-----
 local function UpdateIndex(category : string)
     assert(category, "Missing argument #1 (string expected)")
     assert(type(category), "Class not supported #1 (string expected)")
@@ -236,7 +231,7 @@ local function UpdateIndex(category : string)
     end
 end
 
---<><><><><><><><><>--
+--< Players:
 local function IndexPlayer(Character : Model, displayName)
     if not Character then
         return
@@ -285,7 +280,7 @@ local function IndexAllPlayers()
     end
 end
 
---<><><><><><><><><>--
+--< Rake:
 local function IndexRake()
     local Rake = workspace:FindFirstChild("Rake")
 
@@ -323,7 +318,7 @@ local function IndexRake()
     end
 end
 
---<><><><><><><><><>--
+--< Flare Gun:
 local function IndexFlareGun()
     local FlareGun = workspace:FindFirstChild("FlareGunPickUp")
 
@@ -361,7 +356,7 @@ local function IndexFlareGun()
     end
 end
 
---<><><><><><><><><>--
+--< Scrap:
 local ScrapSpawns = Folders.Filter:WaitForChild("ScrapSpawns")
 
 local function GetAllScraps()
@@ -417,7 +412,7 @@ local function IndexAllScraps()
     end
 end
 
---<><><><><><><><><>--
+--< Waypoint:
 local LocationPoints = Folders.Filter:WaitForChild("LocationPoints"):GetChildren()
 
 local function IndexWaypoint(LocationPoint : Part)
@@ -462,8 +457,11 @@ local function IndexAllWaypoints()
     end
 end
 
---<><><><><><><><><>--
+--< Supply Crate:
 local SupplyCrates = Folders.Debris:WaitForChild("SupplyCrates")
+local SupplyCrateConnections = {}
+local ModifySupplyCratePrompt
+local SetSupplyCrateConnection
 
 local function IndexSupplyCrate(Box : Model)
     if not Box then
@@ -471,6 +469,15 @@ local function IndexSupplyCrate(Box : Model)
     end
 
     local Options = Config.Render.SupplyCrate
+
+    if Config.Misc.BypassSupplyCrateLock then
+        ModifySupplyCratePrompt(Box)
+    else
+        SetSupplyCrateConnection(true, Box)
+        for _, connection in ipairs(SupplyCrateConnections) do
+            connection:Disconnect()
+        end
+    end
 
     local Object = ESPLibrary.new(Box, {
         Nametag = {
@@ -499,6 +506,7 @@ local function IndexSupplyCrate(Box : Model)
                 Duration = 3
             })
         end
+        
         table.insert(ESPObjects.SupplyCrate, Object)
     end
 end
@@ -509,7 +517,7 @@ local function IndexAllSupplyCrates()
     end
 end
 
---<><><><><><><><><>--
+--< Trap:
 local TrapsFolder = Folders.Debris:WaitForChild("Traps")
 
 local function IndexTrap(Trap : Model)
@@ -547,8 +555,17 @@ local function IndexAllTraps()
     end
 end
 
--->> World:
-local InvisibleWalls = Folders.Filter:WaitForChild("InvisibleWalls"):GetChildren() do
+-----<< World >>-----
+local InvisibleWalls = Folders.Filter:WaitForChild("InvisibleWalls"):GetChildren()
+local CurrentLightingProperties = ReplicatedStorage:WaitForChild("CurrentLightingProperties")
+local DayProperties = ReplicatedStorage:WaitForChild("DayProperties"):GetChildren()
+local NightProperties = ReplicatedStorage:WaitForChild("NightProperties"):GetChildren()
+local BloodHourColor = Lighting:WaitForChild("BloodHourColor")
+local NightValue = ReplicatedStorage:WaitForChild("Night")
+local TurningToDay = ReplicatedStorage:WaitForChild("TurningToDay")
+
+--< Map
+do
     for _, Border in ipairs(InvisibleWalls) do
         if Border:IsA("BasePart") or Border:IsA("Part") then
             Border.Material = Enum.Material.Neon
@@ -566,22 +583,12 @@ local function UpdateBorders()
     end
 end
 
---<><><><><><><><><>--
-local CurrentLightingProperties = ReplicatedStorage:WaitForChild("CurrentLightingProperties")
-
 local function EraseFog()
     Lighting.FogEnd = 9999
     CurrentLightingProperties.FogEnd.Value = 9999
 end
 
---<><><><><><><><><>--
-local DayProperties = ReplicatedStorage:WaitForChild("DayProperties"):GetChildren()
-local NightProperties = ReplicatedStorage:WaitForChild("NightProperties"):GetChildren()
-local BloodHourColor = Lighting:WaitForChild("BloodHourColor")
-
-local NightValue = ReplicatedStorage:WaitForChild("Night")
-local TurningToDay = ReplicatedStorage:WaitForChild("TurningToDay")
-
+--< Sky:
 local function UpdateToDay()
     for _, value in ipairs(DayProperties) do
         Lighting[value.Name] = value.Value
@@ -600,8 +607,41 @@ local function UpdateToNight()
     end
 end
 
+-----<< Misc >>-----
+--< Supply Drop Bypass:
+SetSupplyCrateConnection = function(bool, Box)
+    for _, connection in ipairs(getconnections(Box.GUIPart.ProximityPrompt.Triggered)) do
+        if bool then
+            connection:Enable()
+            continue
+        end
+        connection:Disable()
+    end
+end
 
--->> Others:
+ModifySupplyCratePrompt = function(Box : Model)
+    SetSupplyCrateConnection(false, Box)
+
+    Box.GUIPart.ProximityPrompt.Triggered:Connect(function(trigger)
+        if trigger == LocalPlayer and not Box.DB_Folder:FindFirstChild(LocalPlayer.Name) then
+            local ItemsFolder = Box.Items_Folder
+
+            for _, item in ipairs(ItemsFolder:GetChildren()) do
+                local modifierConnection = AdditionalGUI.SupplyDropGUI:AddItem(item, function()
+                    ReplicatedStorage.SupplyClientEvent:FireServer("Collect", item.Name)
+                end)
+
+                if modifierConnection then
+                    table.insert(SupplyCrateConnections, modifierConnection)
+                end
+            end
+
+            AdditionalGUI.SupplyDropGUI:Open()
+        end
+    end)
+end
+
+-----<< Others >>-----
 local function CleanUp()
     warn("Clean Up?")
 
@@ -627,8 +667,7 @@ local function CleanUp()
     end
 end
 
-
---<< GUI >>--
+----------<< GUI >>----------
 local Window = GUILibrary:CreateWindow({
     Name = "JscioHub - The Rake Remastered",
     LoadingTitle = "The Rake Remastered Script",
@@ -649,7 +688,7 @@ local Tabs = {
     Credits = Window:CreateTab("Credits")
 }
 
--->> Movement
+-----<< Movement >>-----
 do
     local Tab = Tabs.Movement
 
@@ -659,7 +698,7 @@ do
         Tab:CreateToggle({
             Name = "No Stamina Drain",
             CurrentValue = Options.NoStaminaDrain,
-            Flag = "Movement.NoStaminaDrain",
+            Flag = "Movement_NoStaminaDrain",
             Callback = function(bool)
                 Options.NoStaminaDrain = bool
             end
@@ -668,7 +707,7 @@ do
         Tab:CreateToggle({
             Name = "No Fall Damage",
             CurrentValue = Options.NoFallDamage,
-            Flag = "Movement.NoFallDamage",
+            Flag = "Movement_NoFallDamage",
             Callback = function(bool)
                 Options.NoFallDamage = bool
             end
@@ -676,7 +715,7 @@ do
     end
 end
 
--->> Render
+-----<< Render >>-----
 do
     local Tab = Tabs.Render
     
@@ -686,7 +725,7 @@ do
         Tab:CreateToggle({
             Name = "Players Nametag Enabled",
             CurrentValue = Options.Nametag.Visible,
-            Flag = "Render.Players.Nametag.Visible",
+            Flag = "Render_Players_Nametag_Visible",
             Callback = function(bool)
                 Options.Nametag.Visible = bool
                 UpdateIndex("Players")
@@ -696,7 +735,7 @@ do
         Tab:CreateToggle({
             Name = "Players Cham Enabled",
             CurrentValue = Options.Cham.Visible,
-            Flag = "Render.Players.Cham.Visible",
+            Flag = "Render_Players_Cham_Visible",
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("Players")
@@ -710,7 +749,7 @@ do
         Tab:CreateToggle({
             Name = "Rake Nametag Enabled",
             CurrentValue = Options.Nametag.Visible,
-            Flag = "Render.Rake.Nametag.Visible",
+            Flag = "Render_Rake_Nametag_Visible",
             Callback = function(bool)
                 Options.Nametag.Visible = bool
                 UpdateIndex("Rake")
@@ -720,7 +759,7 @@ do
         Tab:CreateToggle({
             Name = "Rake Cham Enabled",
             CurrentValue = Options.Cham.Visible,
-            Flag = "Render.Rake.Cham.Visible",
+            Flag = "Render_Rake_Cham_Visible",
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("Rake")
@@ -730,7 +769,7 @@ do
         Tab:CreateToggle({
             Name = "Rake Notifier",
             CurrentValue = SecondaryConfig.Render.RakeNotification,
-            Flag = "Render.Rake.Notification",
+            Flag = "Render_Rake_Notification",
             Callback = function(bool)
                 SecondaryConfig.Render.RakeNotification = bool
             end
@@ -743,7 +782,7 @@ do
         Tab:CreateToggle({
             Name = "Flare Gun Nametag Enabled",
             CurrentValue = Options.Nametag.Visible,
-            Flag = "Render.FlareGun.Nametag.Visible",
+            Flag = "Render_FlareGun_Nametag_Visible",
             Callback = function(bool)
                 Options.Nametag.Visible = bool
                 UpdateIndex("FlareGun")
@@ -753,7 +792,7 @@ do
         Tab:CreateToggle({
             Name = "Flare Gun Cham Enabled",
             CurrentValue = Options.Cham.Visible,
-            Flag = "Render.FlareGun.Cham.Visible",
+            Flag = "Render_FlareGun_Cham_Visible",
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("FlareGun")
@@ -763,7 +802,7 @@ do
         Tab:CreateToggle({
             Name = "Flare Gun Notifier",
             CurrentValue = SecondaryConfig.Render.FlareGunNotification,
-            Flag = "Render.FlareGun.Notification",
+            Flag = "Render_FlareGun_Notification",
             Callback = function(bool)
                 SecondaryConfig.Render.FlareGunNotification = bool
             end
@@ -776,7 +815,7 @@ do
         Tab:CreateToggle({
             Name = "Scrap Nametag Enabled",
             CurrentValue = Options.Nametag.Visible,
-            Flag = "Render.Scrap.Nametag.Visible",
+            Flag = "Render_Scrap_Nametag_Visible",
             Callback = function(bool)
                 Options.Nametag.Visible = bool
                 UpdateIndex("Scrap")
@@ -786,7 +825,7 @@ do
         Tab:CreateToggle({
             Name = "Scrap Cham Enabled",
             CurrentValue = Options.Cham.Visible,
-            Flag = "Render.Scrap.Cham.Visible",
+            Flag = "Render_Scrap_Cham_Visible",
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("Scrap")
@@ -800,7 +839,7 @@ do
         Tab:CreateToggle({
             Name = "Waypoint Nametag Enabled",
             CurrentValue = Options.Nametag.Visible,
-            Flag = "Render.Waypoint.Nametag.Visible",
+            Flag = "Render_Waypoint_Nametag_Visible",
             Callback = function(bool)
                 Options.Nametag.Visible = bool
                 UpdateIndex("Waypoint")
@@ -814,7 +853,7 @@ do
         Tab:CreateToggle({
             Name = "Supply Crate Nametag Enabled",
             CurrentValue = Options.Nametag.Visible,
-            Flag = "Render.SupplyCrate.Nametag.Visible",
+            Flag = "Render_SupplyCrate_Nametag_Visible",
             Callback = function(bool)
                 Options.Nametag.Visible = bool
                 UpdateIndex("SupplyCrate")
@@ -824,7 +863,7 @@ do
         Tab:CreateToggle({
             Name = "Supply Crate Cham Enabled",
             CurrentValue = Options.Cham.Visible,
-            Flag = "Render.SupplyCrate.Cham.Visible",
+            Flag = "Render_SupplyCrate_Cham_Visible",
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("SupplyCrate")
@@ -834,7 +873,7 @@ do
         Tab:CreateToggle({
             Name = "Supply Crate Notifier",
             CurrentValue = SecondaryConfig.Render.SupplyCrateNotification,
-            Flag = "Render.SupplyCrate.Notification",
+            Flag = "Render_SupplyCrate_Notification",
             Callback = function(bool)
                 SecondaryConfig.Render.SupplyCrateNotification = bool
             end
@@ -866,7 +905,7 @@ do
     end
 end
 
--->> World
+-----<< World >>-----
 do
     local Tab = Tabs.World
 
@@ -920,14 +959,14 @@ do
         Tab:CreateToggle({
             Name = "Always Day Time",
             CurrentValue = Options.AlwaysDay,
-            Flag = "World.Sky.AlwaysDay",
+            Flag = "World_Sky_AlwaysDay",
             Callback = function(bool)
                 Options.AlwaysDay = bool
 
                 if bool then
                     if not identity and Options.AlwaysNight then
                         identity = true
-                        GUILibrary.Flags["World.Sky.AlwaysNight"]:Set(false)
+                        GUILibrary.Flags["World_Sky_AlwaysNight"]:Set(false)
                         identity = false
                     end
                 else
@@ -943,14 +982,14 @@ do
         Tab:CreateToggle({
             Name = "Always Night Time",
             CurrentValue = Options.AlwaysNight,
-            Flag = "World.Sky.AlwaysNight",
+            Flag = "World_Sky_AlwaysNight",
             Callback = function(bool)
                 Options.AlwaysNight = bool
 
                 if bool then
                     if not identity and Options.AlwaysDay then
                         identity = true
-                        GUILibrary.Flags["World.Sky.AlwaysDay"]:Set(false)
+                        GUILibrary.Flags["World_Sky_AlwaysDay"]:Set(false)
                         identity = false
                     end
                 else
@@ -966,7 +1005,7 @@ do
         Tab:CreateToggle({
             Name = "No Blood Hour Ambient",
             CurrentValue = Options.NoBloodHour,
-            Flag = "World.Sky.NoBloodHour",
+            Flag = "World_Sky_NoBloodHour",
             Callback = function(bool)
                 Options.NoBloodHour = bool
                 BloodHourColor.Enabled = bool
@@ -975,36 +1014,43 @@ do
     end
 end
 
--->> Misc
+-----<< Misc >>-----
 do
     local Tab = Tabs.Misc
     local Options = Config.Misc
 
-    Tab:CreateSection("Additional GUI") do
-        Tab:CreateToggle({
-            Name = "Time & Power GUI",
-            CurrentValue = Options.TimeNPower,
-            Flag = "Misc.TimeNPower",
-            Callback = function(bool)
-                Options.TimeNPower = bool
+    Tab:CreateToggle({
+        Name = "Time & Power GUI",
+        CurrentValue = Options.TimeNPower,
+        Flag = "Misc_TimeNPower",
+        Callback = function(bool)
+            Options.TimeNPower = bool
 
-                if AdditionalGUI.Constructed then
-                    if bool then
-                        AdditionalGUI.TimePowerUI:Open()
-                    else
-                        AdditionalGUI.TimePowerUI:Close()
-                    end
+            if AdditionalGUI.Constructed then
+                if bool then
+                    AdditionalGUI.TimePowerGUI:Open()
+                else
+                    AdditionalGUI.TimePowerGUI:Close()
                 end
             end
-        })
-    end
+        end
+    })
+
+    Tab:CreateToggle({
+        Name = "Bypass Supply Crate Lock",
+        CurrentValue = Options.BypassSupplyCrateLock,
+        Flag = "Misc_BypassSupplyCrateLock",
+        Callback = function(bool)
+            Options.BypassSupplyCrateLock = bool
+            IndexAllSupplyCrates()
+        end
+    })
 end
 
-
---<< Initalize >>--
+----------<< Initializer >>----------
 AdditionalGUI:Construct() do
     if Config.Misc.TimeNPower then
-        AdditionalGUI.TimePowerUI:Open()
+        AdditionalGUI.TimePowerGUI:Open()
     end
 end
 
@@ -1023,8 +1069,7 @@ coroutine.wrap(function()
     ModifyFallDamage()
 end)()
 
-
---<< Updater >>--
+----------<< Updater >>----------
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "Rake" then
         child:WaitForChild("HumanoidRootPart")
@@ -1051,14 +1096,14 @@ end)
 local TimerValue = ReplicatedStorage:WaitForChild("Timer")
 TimerValue:GetPropertyChangedSignal("Value"):Connect(function()
     if Config.Misc.TimeNPower and AdditionalGUI.Constructed then
-        AdditionalGUI.TimePowerUI:UpdateTime(TimerValue.Value)
+        AdditionalGUI.TimePowerGUI:UpdateTime(TimerValue.Value)
     end
 end)
 
 local PowerLevel = ReplicatedStorage:WaitForChild("PowerValues"):WaitForChild("PowerLevel")
 PowerLevel:GetPropertyChangedSignal("Value"):Connect(function()
     if Config.Misc.TimeNPower and AdditionalGUI.Constructed then
-        AdditionalGUI.TimePowerUI:UpdatePower(PowerLevel.Value)
+        AdditionalGUI.TimePowerGUI:UpdatePower(PowerLevel.Value)
     end
 end)
 
@@ -1068,7 +1113,7 @@ coroutine.wrap(function()
     end
 end)()
 
---<< Game Loop >>--
+----------<< Loop >>----------
 while true do
     if Config.World.Sky.AlwaysDay then
         UpdateToDay()
