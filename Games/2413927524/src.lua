@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2")
+print("JscioHub v0.2.2-1")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -170,7 +170,7 @@ local Config = {
             AlwaysNight = false,
             NoBloodHour = false
         },
-        ModifyDoorKnock = true
+        ModifyDoorKnock = false
     },
     Misc = {
         TimeNPower = true,
@@ -1042,7 +1042,7 @@ do
             Flag = "World_Sky_NoBloodHour",
             Callback = function(bool)
                 Options.NoBloodHour = bool
-                BloodHourColor.Enabled = bool
+                BloodHourColor.Enabled = not bool
             end
         })
     end
