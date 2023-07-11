@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-4")
+print("JscioHub v0.2.2-5")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -192,12 +192,12 @@ local function ModifyStamina()
     for _, v in pairs(getloadedmodules()) do
 		if v.Name == "M_H" then
 			local module = require(v)
-			Hooks.Stamina = hookfunction(module.TakeStamina, function(something, amount)
+            local old; old = hookfunction(module.TakeStamina, function(something, amount)
 				if amount > 0 and Config.Movement.NoStaminaDrain then
-					return Hooks.Stamina(something, -1)
+					return old(something, -1)
 				end
 				 
-				return Hooks.Stamina(something, amount)
+				return old(something, amount)
 			end)
 		end
 	end
@@ -681,7 +681,7 @@ local function HandleDeath()
         repeat
             RunService.Heartbeat:Wait()
         until LocalPlayer:WaitForChild("Started").Value == true
-        
+        print("Player starter")
         ModifyStamina()
     end)()
 end
