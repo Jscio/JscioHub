@@ -227,7 +227,9 @@ coroutine.wrap(function()
                     if isBodyPart then
                         distance = (workspace.CurrentCamera.CFrame.Position - Target.CFrame.Position).Magnitude
                     else
-                        distance = (workspace.CurrentCamera.CFrame.Position - Target.HumanoidRootPart.CFrame.Position).Magnitude
+                        pcall(function()
+                            distance = (workspace.CurrentCamera.CFrame.Position - Target.HumanoidRootPart.CFrame.Position).Magnitude
+                        end)
                     end
 
                     health = math.round(Humanoid.Health)
