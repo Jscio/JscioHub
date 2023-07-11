@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-2")
+print("JscioHub v0.2.2-3")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -58,8 +58,8 @@ local Folders; Folders = {
 ----------<< Configuration >>----------
 local Config = {
     Movement = {
-        NoStaminaDrain = false,
-        NoFallDamage = false
+        NoStaminaDrain = true,
+        NoFallDamage = true
     },
     Render = {
         Players = {
@@ -196,7 +196,7 @@ local function ModifyStamina()
 				if amount > 0 and Config.Movement.NoStaminaDrain then
 					return Hooks.Stamina(something, -1)
 				end
-				
+				 
 				return Hooks.Stamina(something, amount)
 			end)
 		end
@@ -746,6 +746,9 @@ do
             Flag = "Movement_NoStaminaDrain",
             Callback = function(bool)
                 Options.NoStaminaDrain = bool
+                if bool then
+                    ModifyStamina()
+                end
             end
         })
 
