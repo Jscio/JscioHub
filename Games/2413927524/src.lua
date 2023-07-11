@@ -20,7 +20,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.1.7")
+print("JscioHub v0.1.8")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -129,7 +129,7 @@ local Config = {
                 TextSize = 14,
                 Color = { Color3.new(1, 1, 1), 0 },
                 OutlineColor = { Color3.new(0, 0.5, 1), 0.7},
-                Offset = Vector3.new(0, 5, 0)
+                Offset = Vector3.new(0, 6, 0)
             },
             Cham = {
                 Visible = false
@@ -237,17 +237,24 @@ local function UpdateIndex(category : string)
 end
 
 --<><><><><><><><><>--
-local function IndexPlayer(Character : Model)
+local function IndexPlayer(Character : Model, displayName)
     if not Character then
         return
     end
 
     local Options = Config.Render.Players
 
+    local text
+    if Character.Name == displayName then
+        text = displayName
+    else
+        text = displayName .. " - " .. Character.Name
+    end
+
     local Object = ESPLibrary.new(Character, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = Character.Name .. " - {distance} studs",
+            Text = text .. " - {distance} studs - {health} hp",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,
@@ -274,7 +281,7 @@ local function IndexAllPlayers()
             continue
         end
 
-        IndexPlayer(Player.Character)
+        IndexPlayer(Player.Character, Player.DisplayName)
     end
 end
 
@@ -291,7 +298,7 @@ local function IndexRake()
     ESPObjects.Rake = ESPLibrary.new(Rake, {
         Nametag = {
             Visible = Options.Nametag.Visible,
-            Text = "The Rake - {distance} studs",
+            Text = "The Rake - {distance} studs - {health} hp",
             TextSize = Options.Nametag.TextSize,
             Color = Options.Nametag.Color,
             OutlineColor = Options.Nametag.OutlineColor,

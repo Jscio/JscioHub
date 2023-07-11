@@ -218,21 +218,28 @@ coroutine.wrap(function()
                         end
                     end
                 end
+
+
                 
-                local distance = 0
+                local distance = -1
+                local health = -1
                 if Humanoid then
                     if isBodyPart then
                         distance = (workspace.CurrentCamera.CFrame.Position - Target.CFrame.Position).Magnitude
                     else
                         distance = (workspace.CurrentCamera.CFrame.Position - Target.HumanoidRootPart.CFrame.Position).Magnitude
                     end
+
+                    health = math.round(Humanoid.Health)
                 elseif Target:IsA("Model") then
                     distance = (workspace.CurrentCamera.CFrame.Position - Target.WorldPivot.Position).Magnitude
                 else
                     distance = (workspace.CurrentCamera.CFrame.Position - Target.CFrame.Position).Magnitude
                 end
                 
-                ESPObject.Nametag.TextLabel.Text = ESPObject.Options.Nametag.Text:gsub("{distance}", tostring(math.round(distance)))
+                ESPObject.Nametag.TextLabel.Text = ESPObject.Options.Nametag.Text
+                                                        :gsub("{distance}", tostring(math.round(distance)))
+                                                        :gsub("{health}", tostring(health))
             end
         end
     
