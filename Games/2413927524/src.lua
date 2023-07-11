@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.0-2")
+print("JscioHub v0.2.1")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -381,6 +381,7 @@ local function IndexScrap(Scrap : Model)
     end
 
     local Options = Config.Render.Scrap
+    Scrap.Parent:WaitForChild("LevelVal")
 
     local Object = ESPLibrary.new(Scrap, {
         Nametag = {
