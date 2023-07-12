@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.6 - 1B")
+print("JscioHub v0.2.7 - 1B")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
