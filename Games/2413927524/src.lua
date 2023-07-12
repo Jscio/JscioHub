@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.5")
+print("JscioHub v0.2.6 - 1B")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -1126,6 +1126,16 @@ do
         Callback = function(keybind)
            GUILibrary.Keybind = keybind
         end
+    })
+end
+
+-----<< Credit >>-----
+do
+    local Tab = Tabs.Credits
+
+    Tab:CreateParagraph({
+        Title = "Credits",
+        Content = "Scripter = rasyajusticio \nGUI = Rayfield (_shlex)\n"
     })
 end
 
