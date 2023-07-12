@@ -12,6 +12,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 ----------<< Checks >>----------
 if not hookfunction or not hookmetamethod then
@@ -19,7 +20,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.7 - 3B")
+print("JscioHub v0.2.7 - 4B")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -556,6 +557,46 @@ local function IndexAllTraps()
     end
 end
 
+-----<< Utility >>-----
+local function ModifyStunStick()
+    local tool : Tool = LocalPlayer.Backpack:FindFirstChild("StunStick") or LocalPlayer.Character:FindFirstChild("StunStick")
+
+    if not tool then
+        return
+    end
+
+    if tool:GetAttribute("Modified") then
+        return
+    end
+
+    task.wait(1)
+    LocalPlayer.Character.Humanoid:EquipTool(tool)
+    task.wait(1)
+
+    for _, connection in ipairs(getconnections(tool.Activated)) do
+        connection:Disable()
+    end
+
+    tool.Activated:Connect(function()
+        local Animation = LocalPlayer.Character.Humanoid:LoadAnimation(tool.SwingAnim)
+		Animation:Play()
+
+        tool.Event:FireServer("S")
+
+        if workspace:FindFirstChild("Rake") then
+            if workspace:FindFirstChild("Rake"):FindFirstChild("Torso") then
+                for i = 1, 20, 1 do
+                    pcall(function()
+                        tool.Event:FireServer("H", workspace:FindFirstChild("Rake"):FindFirstChild("Torso"))
+                    end)
+                end
+            end
+        end
+    end)
+
+    tool:SetAttribute("Modified", true)
+end
+
 -----<< World >>-----
 local InvisibleWalls = Folders.Filter:WaitForChild("InvisibleWalls"):GetChildren()
 local CurrentLightingProperties = ReplicatedStorage:WaitForChild("CurrentLightingProperties")
@@ -944,6 +985,20 @@ do
             Callback = function(bool)
                 Options.Cham.Visible = bool
                 UpdateIndex("Trap")
+            end
+        })
+    end
+end
+
+-----<< Utility >>-----
+do
+    local Tab = Tabs.Utility
+
+    Tab:CreateSection("Tool Modification") do
+        Tab:CreateButton({
+            Name = "Modify Stun Stick",
+            Callback = function()
+                ModifyStunStick()
             end
         })
     end
