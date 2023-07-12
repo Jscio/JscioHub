@@ -2034,7 +2034,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end)
 
 					if not KeybindSettings.HoldToInteract then
-						local Success, Response = pcall(KeybindSettings.Callback)
+						local Success, Response = pcall(KeybindSettings.Callback, KeybindSettings.CurrentKeybind)
 						if not Success then
 							TweenService:Create(Keybind, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Keybind.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
@@ -2050,10 +2050,10 @@ function RayfieldLibrary:CreateWindow(Settings)
 						if Held then
 							local Loop; Loop = RunService.Stepped:Connect(function()
 								if not Held then
-									KeybindSettings.Callback(false) -- maybe pcall this
+									KeybindSettings.Callback(false, KeybindSettings.CurrentKeybind) -- maybe pcall this
 									Loop:Disconnect()
 								else
-									KeybindSettings.Callback(true) -- maybe pcall this
+									KeybindSettings.Callback(true, KeybindSettings.CurrentKeybind) -- maybe pcall this
 								end
 							end)	
 						end

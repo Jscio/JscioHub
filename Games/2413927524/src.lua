@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-8")
+print("JscioHub v0.2.5")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -35,7 +35,6 @@ local GUILibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/GUI
 local AdditionalGUI = loadstring(game:HttpGet(getgenv().JscioHub .. "/Games/2413927524/AdditionalGUI.lua"))()
 
 ----------<< Variables >>----------
-local Hooks = {}
 local ESPObjects = {
     Players = {},
     Rake = nil,
@@ -204,14 +203,14 @@ local function ModifyStamina()
 end
 
 local function ModifyFallDamage()
-    Hooks.FallDamage = hookmetamethod(game, "__namecall", function(...)
+    local Old; Old = hookmetamethod(game, "__namecall", function(...)
 		if getnamecallmethod() == "FireServer" and Config.Movement.NoFallDamage then
 			if tostring(...) == "FD_Event" then
 				return
 			end
 		end
 		
-		return Hooks.FallDamage(...)
+		return Old(...)
 	end)
 end
 
@@ -676,56 +675,29 @@ ModifySupplyCratePrompt = function(Box : Model)
 end
 
 -----<< Others >>-----
+local SetupDeathDetection
+
 local function HandleDeath()
     coroutine.wrap(function()
         repeat
             RunService.Heartbeat:Wait()
-        until LocalPlayer:WaitForChild("Started").Value == false
-        print("Player's dead dead")
+        until LocalPlayer:WaitForChild("Started").Value == false -- Waiting until player is truly dead
 
         repeat
             RunService.Heartbeat:Wait()
-        until LocalPlayer:WaitForChild("Started").Value == true
-        print("Player's spawning in")
+        until LocalPlayer:WaitForChild("Started").Value == true -- Waiting for player to press start
 
-        task.wait(3)
+        task.wait(3) -- Waiting for play sequence to complete
 
-        print("Modify Stamina")
         ModifyStamina()
         SetupDeathDetection()
     end)()
 end
 
-local function SetupDeathDetection()
+SetupDeathDetection = function()
     LocalPlayer.Character.Humanoid.Died:Connect(function()
-        print("Death")
         HandleDeath()
     end)
-end
-
-local function CleanUp()
-    warn("Clean Up?")
-
-    for _, v in pairs(getloadedmodules()) do
-		if v.Name == "M_H" then
-			local module = require(v)
-			hookfunction(module.TakeStamina, Hooks.Stamina)
-		end
-	end
-
-    hookmetamethod(game, "__namecall", Hooks.FallDamage)
-
-    for key, category in pairs(ESPObjects) do
-        if type(category) == "table" then
-            for idx, ESPObject in ipairs(category) do
-                ESPObject:Destroy()
-                table.remove(category, idx)
-            end
-        else
-            category:Destroy()
-            ESPObjects[key] = nil
-        end
-    end
 end
 
 ----------<< GUI >>----------
@@ -734,7 +706,7 @@ local Window = GUILibrary:CreateWindow({
     LoadingTitle = "The Rake Remastered Script",
     LoadingSubtitle = "by JscioHub",
     ConfigurationSaving = {
-       Enabled = true,
+       Enabled = false,
        FolderName = "JscioHub"
     }
 })
@@ -1074,10 +1046,10 @@ do
         })
     end
 
-    Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
     Tab:CreateSection("Map Modification") do
         local Options = Config.World
 
+        Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
         Tab:CreateLabel("You must be close to The Safehouse to do this.")
 
         Tab:CreateKeybind({
@@ -1139,6 +1111,20 @@ do
         Callback = function(bool)
             Options.BypassSupplyCrateLock = bool
             IndexAllSupplyCrates()
+        end
+    })
+end
+
+-----<< Settings >>-----
+do
+    local Tab = Tabs.Settings
+
+    Tab:CreateKeybind({
+        Name = "Toggle GUI",
+        CurrentKeybind = GUILibrary.Keybind,
+        HoldToInteract = false,
+        Callback = function(keybind)
+           GUILibrary.Keybind = keybind
         end
     })
 end
