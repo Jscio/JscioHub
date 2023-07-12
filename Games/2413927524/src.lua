@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.7 - 2B")
+print("JscioHub v0.2.7 - 3B")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -753,6 +753,7 @@ do
             HoldToInteract = false,
             Callback = function()
                 isQuickRunning = not isQuickRunning
+                print("isQuickRunning = ", isQuickRunning)
             end
         })
     end
@@ -1229,7 +1230,9 @@ RunService.Heartbeat:Connect(function()
     if Config.World.NoFog then
         EraseFog()
     end
+end)
 
+RunService.RenderStepped:Connect(function()
     if isQuickRunning then
         LocalPlayer.Character.Humanoid.WalkSpeed = 24
     end
