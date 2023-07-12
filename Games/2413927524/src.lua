@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.7 - 1B")
+print("JscioHub v0.2.7 - 2B")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -722,6 +722,7 @@ local Tabs = {
 }
 
 -----<< Movement >>-----
+local isQuickRunning = false
 do
     local Tab = Tabs.Movement
 
@@ -743,6 +744,15 @@ do
             Flag = "Movement_NoFallDamage",
             Callback = function(bool)
                 Options.NoFallDamage = bool
+            end
+        })
+
+        Tab:CreateKeybind({
+            Name = "Quick Run",
+            CurrentKeybind = "Q",
+            HoldToInteract = false,
+            Callback = function()
+                isQuickRunning = not isQuickRunning
             end
         })
     end
@@ -1218,5 +1228,9 @@ RunService.Heartbeat:Connect(function()
 
     if Config.World.NoFog then
         EraseFog()
+    end
+
+    if isQuickRunning then
+        LocalPlayer.Character.Humanoid.WalkSpeed = 24
     end
 end)
