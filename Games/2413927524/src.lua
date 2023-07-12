@@ -19,7 +19,7 @@ if not hookfunction or not hookmetamethod then
     return
 end
 
-print("JscioHub v0.2.2-8")
+print("JscioHub v0.2.4")
 
 if Players.LocalPlayer.Character == nil or not Players.LocalPlayer.Character then
     warn("Unable to find localplayer character. Yielding...")
@@ -35,7 +35,9 @@ local GUILibrary = loadstring(game:HttpGet(getgenv().JscioHub .. "/Libraries/GUI
 local AdditionalGUI = loadstring(game:HttpGet(getgenv().JscioHub .. "/Games/2413927524/AdditionalGUI.lua"))()
 
 ----------<< Variables >>----------
-local Hooks = {}
+getgenv().Unload = false
+local Connections = {}
+local LogConnection
 local ESPObjects = {
     Players = {},
     Rake = nil,
@@ -204,14 +206,14 @@ local function ModifyStamina()
 end
 
 local function ModifyFallDamage()
-    Hooks.FallDamage = hookmetamethod(game, "__namecall", function(...)
+    local Old; Old = hookmetamethod(game, "__namecall", function(...)
 		if getnamecallmethod() == "FireServer" and Config.Movement.NoFallDamage then
 			if tostring(...) == "FD_Event" then
 				return
 			end
 		end
 		
-		return Hooks.FallDamage(...)
+		return Old(...)
 	end)
 end
 
@@ -656,7 +658,7 @@ ModifySupplyCratePrompt = function(Box : Model)
 
     SetSupplyCrateConnection(false, Box)
 
-    Box.GUIPart.ProximityPrompt.Triggered:Connect(function(trigger)
+    LogConnection(Box.GUIPart.ProximityPrompt.Triggered:Connect(function(trigger)
         if trigger == LocalPlayer and not Box.DB_Folder:FindFirstChild(LocalPlayer.Name) then
             local ItemsFolder = Box.Items_Folder
 
@@ -672,59 +674,38 @@ ModifySupplyCratePrompt = function(Box : Model)
 
             AdditionalGUI.SupplyDropGUI:Open()
         end
-    end)
+    end))
 end
 
 -----<< Others >>-----
+local SetupDeathDetection
+
 local function HandleDeath()
     coroutine.wrap(function()
         repeat
             RunService.Heartbeat:Wait()
-        until LocalPlayer:WaitForChild("Started").Value == false
-        print("Player's dead dead")
+        until LocalPlayer:WaitForChild("Started").Value == false -- Waiting until player is truly dead
 
         repeat
             RunService.Heartbeat:Wait()
-        until LocalPlayer:WaitForChild("Started").Value == true
-        print("Player's spawning in")
+        until LocalPlayer:WaitForChild("Started").Value == true -- Waiting for player to press start
 
-        task.wait(3)
+        task.wait(3) -- Waiting for play sequence to complete
 
-        print("Modify Stamina")
         ModifyStamina()
         SetupDeathDetection()
     end)()
 end
 
-local function SetupDeathDetection()
-    LocalPlayer.Character.Humanoid.Died:Connect(function()
-        print("Death")
+SetupDeathDetection = function()
+    LogConnection(LocalPlayer.Character.Humanoid.Died:Connect(function()
         HandleDeath()
-    end)
+    end))
 end
 
-local function CleanUp()
-    warn("Clean Up?")
-
-    for _, v in pairs(getloadedmodules()) do
-		if v.Name == "M_H" then
-			local module = require(v)
-			hookfunction(module.TakeStamina, Hooks.Stamina)
-		end
-	end
-
-    hookmetamethod(game, "__namecall", Hooks.FallDamage)
-
-    for key, category in pairs(ESPObjects) do
-        if type(category) == "table" then
-            for idx, ESPObject in ipairs(category) do
-                ESPObject:Destroy()
-                table.remove(category, idx)
-            end
-        else
-            category:Destroy()
-            ESPObjects[key] = nil
-        end
+LogConnection = function(connection : RBXScriptSignal)
+    if connection then
+        table.insert(Connections, connection)
     end
 end
 
@@ -734,7 +715,7 @@ local Window = GUILibrary:CreateWindow({
     LoadingTitle = "The Rake Remastered Script",
     LoadingSubtitle = "by JscioHub",
     ConfigurationSaving = {
-       Enabled = true,
+       Enabled = false,
        FolderName = "JscioHub"
     }
 })
@@ -1074,10 +1055,11 @@ do
         })
     end
 
-    Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
+    
     Tab:CreateSection("Map Modification") do
         local Options = Config.World
 
+        Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
         Tab:CreateLabel("You must be close to The Safehouse to do this.")
 
         Tab:CreateKeybind({
@@ -1143,6 +1125,51 @@ do
     })
 end
 
+-----<< Settings >>-----
+do
+    local Tab = Tabs.Settings
+
+    Tab:CreateButton({
+        Name = "Unload Hub",
+        Callback = function()
+            getgenv().Unload = true
+            for _, connection in ipairs(Connections) do
+                connection:Disconnect()
+            end
+
+            for category, _ in pairs(ESPObjects) do
+                if category == "Rake" or category == "FlareGun" then
+                    if ESPObjects[category] ~= nil then
+                        ESPObjects[category]:Destroy()
+                    end
+                    return
+                end
+            
+                for _, ESPObject in ipairs(ESPObjects[category]) do
+                    ESPObject:Destroy()
+                end
+            end
+
+            AdditionalGUI.SupplyDropGUI:Destroy()
+            AdditionalGUI.TimePowerGUI:Destroy()
+            
+            Config.Movement.NoStaminaDrain = false
+            Config.Movement.NoFallDamage = false
+
+            GUILibrary:Destroy()
+        end
+    })
+
+    Tab:CreateKeybind({
+        Name = "Toggle GUI",
+        CurrentKeybind = GUILibrary.Keybind,
+        HoldToInteract = false,
+        Callback = function(keybind)
+           GUILibrary.Keybind = keybind
+        end
+    })
+end
+
 ----------<< Initializer >>----------
 AdditionalGUI:Construct() do
     if Config.Misc.TimeNPower then
@@ -1167,51 +1194,55 @@ coroutine.wrap(function()
 end)()
 
 ----------<< Updater >>----------
-workspace.ChildAdded:Connect(function(child)
+LogConnection(workspace.ChildAdded:Connect(function(child)
     if child.Name == "Rake" then
         child:WaitForChild("HumanoidRootPart")
         IndexRake()
     elseif child.Name == "FlareGunPickUp" then
         IndexFlareGun()
     end
-end)
+end))
 
 for _, Spawner in ipairs(ScrapSpawns:GetChildren()) do
-    Spawner.ChildAdded:Connect(function(child)
+    LogConnection(Spawner.ChildAdded:Connect(function(child)
         IndexScrap(child:WaitForChild("Scrap"))
-    end)
+    end))
 end
 
-SupplyCrates.ChildAdded:Connect(function(child)
+LogConnection(SupplyCrates.ChildAdded:Connect(function(child)
     IndexSupplyCrate(child)
-end)
+end))
 
-TrapsFolder.ChildAdded:Connect(function(child)
+LogConnection(TrapsFolder.ChildAdded:Connect(function(child)
     IndexTrap(child)
-end)
+end))
 
 local TimerValue = ReplicatedStorage:WaitForChild("Timer")
-TimerValue:GetPropertyChangedSignal("Value"):Connect(function()
+LogConnection(TimerValue:GetPropertyChangedSignal("Value"):Connect(function()
     if Config.Misc.TimeNPower and AdditionalGUI.Constructed then
         AdditionalGUI.TimePowerGUI:UpdateTime(TimerValue.Value)
     end
-end)
+end))
 
 local PowerLevel = ReplicatedStorage:WaitForChild("PowerValues"):WaitForChild("PowerLevel")
-PowerLevel:GetPropertyChangedSignal("Value"):Connect(function()
+LogConnection(PowerLevel:GetPropertyChangedSignal("Value"):Connect(function()
     if Config.Misc.TimeNPower and AdditionalGUI.Constructed then
         AdditionalGUI.TimePowerGUI:UpdatePower(PowerLevel.Value)
     end
-end)
+end))
 
 coroutine.wrap(function()
     while task.wait(5) do
+        if getgenv().Unload then
+            break
+        end
+
         IndexAllPlayers()
     end
 end)()
 
 ----------<< Loop >>----------
-RunService.Heartbeat:Connect(function()
+LogConnection(RunService.Heartbeat:Connect(function()
     if Config.World.Sky.AlwaysDay then
         UpdateToDay()
     end
@@ -1223,4 +1254,4 @@ RunService.Heartbeat:Connect(function()
     if Config.World.NoFog then
         EraseFog()
     end
-end)
+end))

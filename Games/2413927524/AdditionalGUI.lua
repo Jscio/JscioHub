@@ -330,6 +330,10 @@ function AdditionalGUI:Construct()
 
 			return connection
 		end
+
+		function self.SupplyDropGUI:Destroy()
+			SupplyDropGUI:Destroy()
+		end
 	end
 end
 
