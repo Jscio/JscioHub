@@ -677,8 +677,6 @@ end
 -----<< Others >>-----
 local SetupDeathDetection
 
-local SetupDeathDetection
-
 local function HandleDeath()
     coroutine.wrap(function()
         repeat
@@ -689,7 +687,6 @@ local function HandleDeath()
             RunService.Heartbeat:Wait()
         until LocalPlayer:WaitForChild("Started").Value == true -- Waiting for player to press start
 
-        task.wait(3) -- Waiting for play sequence to complete
         task.wait(3) -- Waiting for play sequence to complete
 
         ModifyStamina()
@@ -1052,7 +1049,6 @@ do
     Tab:CreateSection("Map Modification") do
         local Options = Config.World
 
-        Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
         Tab:CreateLabel("SERVER SIDED: Everyone is affected.")
         Tab:CreateLabel("You must be close to The Safehouse to do this.")
 
